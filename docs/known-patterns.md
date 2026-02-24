@@ -36,3 +36,19 @@
 ### Port hardcodé (v0.1.2)
 - Le port backend est fixé à 17293 depuis v0.1.19
 - Ne jamais revenir à un port dynamique (source de bugs IPC)
+
+### Filtre fichiers frontend != capacités backend (v0.2.12)
+- **NE PAS** ajouter d'extensions au filtre ChatInput sans vérifier que `extract_text()` les supporte
+- Extensions supportées (v0.2.12) : `.txt`, `.md`, `.pdf`, `.docx`, `.xlsx`, `.json`, `.csv` + fichiers code
+- `.doc`, `.xls`, `.ods`, `.pptx`, `.ppt`, `.odt` ne sont PAS supportés
+- Corrigé en v0.2.12 (PR #20)
+
+### `extract_text()` avale les exceptions (v0.2.12 - DETTE)
+- `file_parser.py` a un `except Exception` qui retourne `None` au lieu de propager
+- Le caller (files.py) ne peut pas distinguer "format non supporté" de "erreur d'extraction"
+- À corriger : propager les exceptions ou retourner un message explicite
+
+### `asyncio.get_event_loop()` déprécié (v0.2.12 - CORRIGÉ)
+- **NE PLUS** utiliser `get_event_loop()` dans le backend
+- Remplacé par `get_running_loop()` dans imap_smtp_provider.py (PR #19) et caldav_provider.py (PR #23)
+- Test de régression scanne tout `src/backend/app/` pour empêcher toute régression
