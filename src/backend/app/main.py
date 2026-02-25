@@ -71,12 +71,11 @@ logger = logging.getLogger(__name__)
 async def _load_brave_key():
     """Load Brave Search API key from database into cache."""
     try:
-        from sqlalchemy import select
-
         from app.models.database import get_session_context
         from app.models.entities import Preference
         from app.services.encryption import decrypt_value
         from app.services.web_search import set_brave_api_key
+        from sqlalchemy import select
 
         async with get_session_context() as session:
             result = await session.execute(
