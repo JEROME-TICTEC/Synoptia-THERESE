@@ -170,20 +170,24 @@ async def execute_skill(
 
         # BUG-043 : Vérifier que le document généré contient assez de contenu.
         # Si quasi vide (code-execution minimal + fallback vide), retry en Markdown.
+        # Note : result est un SkillExecuteResponse (pas de file_path).
+        # On récupère le SkillResult depuis le cache du registry pour valider le fichier.
         if (
             skill.output_type == SkillOutputType.FILE
-            and result.file_path
-            and result.file_path.exists()
+            and result.success
+            and result.file_id
         ):
-            from app.services.skills.code_executor import _validate_document_content
-            if not _validate_document_content(
-                str(result.file_path), skill.output_format.value
-            ):
-                logger.warning(
-                    f"Skill {skill_id} : document quasi vide, retry Markdown"
-                )
-                markdown_addition = skill.get_markdown_prompt_addition()
-                retry_prompt = f"""
+            cached_result = registry.get_file(result.file_id)
+            if cached_result and cached_result.file_path.exists():
+                from app.services.skills.code_executor import _validate_document_content
+                if not _validate_document_content(
+                    str(cached_result.file_path), skill.output_format.value
+                ):
+                    logger.warning(
+                        f"Skill {skill_id} : document quasi vide, retry Markdown"
+                    )
+                    markdown_addition = skill.get_markdown_prompt_addition()
+                    retry_prompt = f"""
 {request.prompt}
 
 ## Contexte utilisateur
@@ -192,12 +196,12 @@ async def execute_skill(
 {markdown_addition}
 IMPORTANT : Écris directement le contenu textuel complet et détaillé. NE génère PAS de code Python.
 """
-                retry_content = await llm_service.generate_content(
-                    prompt=retry_prompt,
-                    context=request.context,
-                    max_tokens=llm_max_tokens,
-                )
-                result = await registry.execute(skill_id, skill_request, retry_content)
+                    retry_content = await llm_service.generate_content(
+                        prompt=retry_prompt,
+                        context=request.context,
+                        max_tokens=llm_max_tokens,
+                    )
+                    result = await registry.execute(skill_id, skill_request, retry_content)
 
         return result
 
