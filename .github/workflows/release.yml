@@ -141,12 +141,8 @@ jobs:
             chmod +x "$DEST" 2>/dev/null || true
             echo "Sidecar copié : $DEST ($(du -sh "$DEST" | cut -f1))"
 
-            # Créer le placeholder backend-libs/ pour satisfaire le glob de resources Tauri.
-            # Sur macOS/Windows, ce dossier est vide (pas utilisé au runtime).
-            # Sur Linux, il est peuplé avec le contenu du onedir.
-            mkdir -p src/frontend/src-tauri/binaries/backend-libs
-            touch src/frontend/src-tauri/binaries/backend-libs/.gitkeep
-            echo "Placeholder backend-libs créé pour les resources Tauri (macOS/Windows)"
+            # Pas besoin de backend-libs sur macOS/Windows (resources vide dans tauri.conf.json)
+            # Le dossier backend-libs est uniquement utilisé sur Linux (onedir PyInstaller)
           fi
 
       - name: Signer le sidecar (macOS ad-hoc)
@@ -224,6 +220,16 @@ jobs:
           echo $! > /tmp/ram_monitor.pid
         shell: bash
 
+      - name: Vérifier backend-libs (Linux debug)
+        if: runner.os == 'Linux'
+        run: |
+          echo "=== Contenu backend-libs ==="
+          ls -la src/frontend/src-tauri/binaries/backend-libs/ | head -20
+          echo "=== Taille totale ==="
+          du -sh src/frontend/src-tauri/binaries/backend-libs/
+          echo "=== Config Linux ==="
+          cat src/frontend/src-tauri/tauri.linux.conf.json
+
       # ---- Build Tauri ----
       - name: Build THÉRÈSE (Tauri)
         uses: tauri-apps/tauri-action@v0
@@ -244,4 +250,4 @@ jobs:
             - **Linux** : Installer avec `sudo dpkg -i therese_*.deb`
           releaseDraft: true
           prerelease: true
-          args: ${{ runner.os == 'Linux' && '--bundles deb' || '' }}
+          args: ${{ runner.os == 'Linux' && '--bundles deb --config src-tauri/tauri.linux.conf.json' || '' }}
