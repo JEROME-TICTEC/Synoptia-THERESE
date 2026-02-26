@@ -120,15 +120,15 @@ palette:
 
 ---
 
-## État du projet (màj 25 fév 2026)
+## État du projet (màj 26 fév 2026)
 
 ### Chiffres clés
-- **Code** : ~65 000 lignes (32 500 frontend + 32 500 backend)
-- **Tests** : ~11 000 lignes (pytest + Vitest + Playwright E2E)
-- **Endpoints API** : 180+ (24 routers FastAPI)
+- **Code** : ~65 500 lignes (32 800 frontend + 32 700 backend)
+- **Tests** : ~11 200 lignes (pytest + Vitest + Playwright E2E)
+- **Endpoints API** : 181+ (24 routers FastAPI)
 - **Tables SQL** : 16 (SQLite) + Qdrant vectoriel
-- **Version actuelle** : v0.3.0-alpha (25 fév 2026)
-- **Tests de non-régression** : 444 tests (349 backend + 1 xfail + 94 frontend), couvrant BUG-002 à BUG-041 + XSS + scroll + UX + OpenRouter + Fal + Ollama + upload + skill_id + raccourci + calendrier + CRM + pricing + streaming + email + stop + layout shift + erreurs Ollama + listbox contraste + retours à la ligne
+- **Version actuelle** : v0.3.6-alpha (26 fév 2026)
+- **Tests de non-régression** : 645 tests (629 backend + 1 xfail + 16 régression v0.3.6), couvrant BUG-002 à BUG-052 + XSS + scroll + UX + OpenRouter + Fal + Ollama + upload + skill_id + raccourci + calendrier + CRM + pricing + streaming + email + stop + layout shift + erreurs Ollama + listbox contraste + retours à la ligne + clés corrompues + modèle Ollama + indicateur modèle + CRM OAuth + Linux .deb
 
 ### Modules fonctionnels
 Chat multi-LLM (file d'attente V3), Mémoire (contacts/projets/recherche sémantique), Skills Office (DOCX/PPTX/XLSX), Outils installés V3 (scripts pré-validés ~/.therese/tools/), Commandes V3 (système unifié + commandes utilisateur custom), Email (Gmail OAuth + IMAP/SMTP + classification IA), Calendrier (Google + CalDAV + local), CRM (pipeline, scoring, sync Google Sheets, import/export), Facturation (devis/facture/avoir, PDF conforme, TVA franchise en base), Board de décision IA (5 conseillers), Génération d'images (DALL-E 3 + Gemini), Transcription vocale (Groq Whisper), Recherche web (Brave Search), MCP (19 presets), RGPD (export, anonymisation), Calculateurs (ROI, ICE, RICE, NPV)
@@ -170,8 +170,11 @@ Chat multi-LLM (file d'attente V3), Mémoire (contacts/projets/recherche sémant
 - v0.2.11 : Batch fixes Ollama 500, mail streaming, SMTP, Gmail OAuth, Apple Windows, Linux
 - v0.2.12 : Batch fixes contexte chat, CRM PATCH, Ollama skills, asyncio CalDAV, tri chat, tokens
 - v0.2.13 : Ollama re-test bouton, skills timeout, Gmail 403
+- v0.3.4 : Onboarding refacto, sidecar onedir Linux (wrapper shell + backend-libs)
+- v0.3.5 : BUG-050 backup fichier clé Fernet (survit aux changements signature binaire macOS)
+- v0.3.6 : BUG-051 clés corrompues détectées (croix rouge), BUG-052 modèle Ollama respecté, F-12 indicateur modèle actif, F-13 re-saisie OAuth CRM, BUG-044b Linux .deb backend-libs inclus
 
-### Matrice de traçabilité bugs (25 fév 2026)
+### Matrice de traçabilité bugs (26 fév 2026)
 
 | Bug | Description | Statut | Confirmé par |
 |-----|-------------|--------|-------------|
@@ -210,6 +213,10 @@ Chat multi-LLM (file d'attente V3), Mémoire (contacts/projets/recherche sémant
 | BUG-038 | Impossible d'interrompre un output en cours | Fixé v0.2.6 | Zézette (17 fév) |
 | BUG-039 | Pas d'action après génération email dans chat | Fixé v0.2.6 | Zézette (18 fév) |
 | BUG-040 | DOCX page blanche (code tronqué sans .save) | Fixé v0.2.6 | Zézette (18 fév) |
+| BUG-044b | Linux .deb manque backend-libs/ | Fixé v0.3.6 | Dr_logic-3D (26 fév) |
+| BUG-050 | Clé Fernet perdue après MAJ macOS | Fixé v0.3.5 | Ludo (26 fév) |
+| BUG-051 | Clés API corrompues affichent check verte | Fixé v0.3.6 | Ludo (26 fév) |
+| BUG-052 | Modèle Ollama ignoré (fallback mistral-nemo) | Fixé v0.3.6 | Ludo (26 fév) |
 
 ---
 
@@ -242,8 +249,9 @@ Chat multi-LLM (file d'attente V3), Mémoire (contacts/projets/recherche sémant
 
 ### CI GitHub Actions
 - **CI THÉRÈSE V2** : lint Ruff + pytest backend + vitest frontend. CI verte depuis v0.2.8 (fix timeout threads orphelins httpx). Les 10 warnings frontend sont des dépendances manquantes dans les hooks React.
-- **Release THÉRÈSE** : build Tauri (macOS ARM64 + Windows x64 + Linux x64). Se déclenche sur push de tag. v0.3.0-alpha build 3/3 success (25 fév).
+- **Release THÉRÈSE** : build Tauri (macOS ARM64 + Windows x64 + Linux x64). Se déclenche sur push de tag. v0.3.6-alpha build 3/3 success (26 fév).
 - **Leçon v0.1.7** : NE JAMAIS exclure de sous-modules torch dans backend.spec - torch les importe tous à l'init.
+- **Leçon v0.3.6** : Le glob `**` seul ne fonctionne pas dans les resources Tauri - utiliser `**/*` ou des patterns explicites.
 
 ### Releases GitHub
 
@@ -283,7 +291,10 @@ Chat multi-LLM (file d'attente V3), Mémoire (contacts/projets/recherche sémant
 | v0.2.11-alpha | 23 fév | Pre-release | Batch fixes Ollama 500, mail streaming, SMTP, Gmail OAuth, Apple Windows, Linux |
 | v0.2.12-alpha | 24 fév | Pre-release | Batch fixes contexte chat, CRM PATCH, Ollama skills, asyncio CalDAV, tri chat, tokens |
 | v0.2.13-alpha | 25 fév | Pre-release | Ollama re-test bouton, skills timeout, Gmail 403 |
-| **v0.3.0-alpha** | **25 fév** | **Pre-release** | **V3 : file d'attente chat, outils installés, commandes unifiées, Brave Search, Sonnet 4.6 + 444 tests** |
+| v0.3.0-alpha | 25 fév | Pre-release | V3 : file d'attente chat, outils installés, commandes unifiées, Brave Search, Sonnet 4.6 + 444 tests |
+| v0.3.4-alpha | 26 fév | Pre-release | Onboarding refacto, sidecar onedir Linux |
+| v0.3.5-alpha | 26 fév | Pre-release | BUG-050 backup clé Fernet (239 tests) |
+| **v0.3.6-alpha** | **26 fév** | **Pre-release** | **BUG-051 clés corrompues + BUG-052 Ollama + F-12 indicateur modèle + F-13 OAuth CRM + BUG-044b Linux .deb + 645 tests** |
 
 ---
 
@@ -386,7 +397,15 @@ Laroll (Yoan), Julien, Arnolhn, Alb, Flo'Houx (Florent), Psychedelic_Mayhem (Pau
 - [x] Rebase réussi de 2 commits V3 sur 50+ commits remote (v0.2.7-v0.2.13), 16 conflits résolus
 - [x] 444 tests (349 backend + 1 xfail + 94 frontend) = 0 échec
 
-### TODO v0.3.1-alpha (prochaine version)
+### v0.3.6-alpha (26 fév 2026) - FAIT
+- [x] **BUG-051** : Clés API corrompues détectées - helper `_check_key_decryptable()`, croix rouge XCircle au lieu de check verte, bandeau rouge "Clé corrompue - veuillez la ressaisir"
+- [x] **BUG-052** : Modèle Ollama sélectionné respecté - lecture DB dans `get_llm_service_for_provider()`, fallback `selected_model or "mistral-nemo"`
+- [x] **F-12** : Indicateur modèle actif au-dessus de la barre de saisie (icône Cpu + nom modèle, event `therese:llm-config-changed`)
+- [x] **F-13** : Re-saisie credentials Google OAuth dans paramètres CRM - endpoint `POST /sync/credentials`, formulaire avec validation format
+- [x] **BUG-044b** : Linux .deb inclut backend-libs/ (glob `*` + `_internal/**/*` dans tauri.linux.conf.json)
+- [x] 16 tests de régression ajoutés, 629 backend PASS, typecheck OK
+
+### TODO v0.3.7-alpha (prochaine version)
 - [ ] **BUG-037** : Saut streaming résiduel - le fix v0.2.5 (texte brut + minHeight) réduit les sauts mais ne les élimine pas complètement. **Piste** : évaluer `use-stick-to-bottom` (lib StackBlitz, ResizeObserver + spring animations) ou utiliser `scrollIntoView` avec `behavior: smooth` sur le dernier élément
 - [ ] **BUG-027** : Compteur tokens faux - le backend estime avec `len(text)//4` au lieu d'utiliser les vrais compteurs renvoyés par les API. Ajouter champ `usage` dans `StreamEvent` (base.py), récupérer `input_tokens`/`output_tokens` de chaque provider
 - [ ] Filtrage `<think>...</think>` pour les modèles raisonnement (DeepSeek R1, Qwen QwQ, etc.) - cacher le raisonnement interne ou l'afficher dans un bloc dépliable
@@ -499,7 +518,7 @@ Avant chaque release :
 4. Quand un nouveau bug est corrigé, **ajouter un test dans `tests/test_regression.py`** avec la convention `TestBUGXXX_description`
 
 Fichier de tests : `tests/test_regression.py`
-- Couvre BUG-002 (port dynamique) à BUG-040 (DOCX page blanche) + XSS
+- Couvre BUG-002 (port dynamique) à BUG-052 (modèle Ollama) + XSS + clés corrompues + Linux .deb
 - Chaque test vérifie que le fix est toujours présent dans le code source
 - Un test qui passe = le fix n'a pas régressé
 
