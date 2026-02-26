@@ -1,7 +1,8 @@
 {
   "bundle": {
     "resources": [
-      "binaries/backend-libs/**"
+      "binaries/backend-libs/*",
+      "binaries/backend-libs/_internal/**/*"
     ]
   }
 }
