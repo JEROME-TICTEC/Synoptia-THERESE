@@ -214,6 +214,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       await api.setApiKey(selectedProvider, apiKeyInput);
       setSaved(true);
       setApiKeys(prev => ({ ...prev, [selectedProvider]: true }));
+      setCorruptedKeys(prev => prev.filter(k => k !== selectedProvider));
       setApiKeyInput('');
 
       setTimeout(() => {
