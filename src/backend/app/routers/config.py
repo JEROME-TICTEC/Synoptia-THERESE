@@ -895,7 +895,6 @@ async def get_llm_config(session: AsyncSession = Depends(get_session)):
     elif config.provider.value == "ollama":
         # F-14 : lister les modèles Ollama installés localement
         try:
-            import httpx
             client = await get_http_client()
             resp = await client.get(f"{settings.ollama_base_url}/api/tags", timeout=5.0)
             if resp.status_code == 200:
@@ -1013,7 +1012,6 @@ async def set_llm_config(
     post_available_models: list[str] = []
     if provider == LLMProvider.OLLAMA:
         try:
-            import httpx
             client = await get_http_client()
             resp = await client.get(f"{settings.ollama_base_url}/api/tags", timeout=5.0)
             if resp.status_code == 200:
