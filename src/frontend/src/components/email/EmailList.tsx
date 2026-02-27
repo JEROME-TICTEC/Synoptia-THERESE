@@ -19,6 +19,7 @@ export function EmailList({ accountId }: EmailListProps) {
   const {
     messages,
     setMessages,
+    updateMessage,
     removeMessage,
     currentMessageId,
     setCurrentMessage,
@@ -85,48 +86,53 @@ export function EmailList({ accountId }: EmailListProps) {
 
       if (controller.signal.aborted) return;
 
-      // Fetch full details for each message
-      const messagesWithDetails = await Promise.all(
-        result.messages.map(async (msg) => {
-          try {
-            return await api.getEmailMessage(accountId, msg.id);
-          } catch (err) {
-            console.error(`Failed to load message ${msg.id}:`, err);
-            return null;
-          }
-        })
-      );
+      // BUG-061: Utiliser les données enrichies du list endpoint directement
+      // Plus besoin de re-fetch chaque message individuellement (économise 50+ appels API)
+      const mappedMessages: api.EmailMessage[] = result.messages
+        .filter((msg: any) => !msg.error)
+        .map((msg: any) => {
+          // Parser "Nom <email>" depuis le champ from
+          const fromStr = msg.from || '';
+          const fromMatch = fromStr.match(/^(.*?)\s*<(.+?)>$/);
+          const from_name = fromMatch ? fromMatch[1].trim().replace(/^"|"$/g, '') : '';
+          const from_email = fromMatch ? fromMatch[2] : fromStr;
+
+          const msgLabelIds: string[] = msg.labelIds || [];
+
+          // Récupérer la classification existante du cache local
+          const cached = useEmailStore.getState().messages.find((m) => m.id === msg.id);
+
+          return {
+            id: msg.id,
+            thread_id: msg.threadId || msg.id,
+            subject: msg.subject || '(Sans objet)',
+            from_email,
+            from_name: from_name || null,
+            to_emails: cached?.to_emails || [],
+            date: msg.date || new Date().toISOString(),
+            labels: msgLabelIds,
+            is_read: msg.is_read ?? !msgLabelIds.includes('UNREAD'),
+            is_starred: msg.is_starred ?? msgLabelIds.includes('STARRED'),
+            is_draft: msgLabelIds.includes('DRAFT'),
+            has_attachments: cached?.has_attachments || false,
+            snippet: msg.snippet || null,
+            body_plain: cached?.body_plain || null,
+            body_html: cached?.body_html || null,
+            // Conserver la classification existante du cache
+            priority: cached?.priority || null,
+            priority_score: cached?.priority_score || null,
+            priority_reason: cached?.priority_reason || null,
+            category: cached?.category || null,
+          } as api.EmailMessage;
+        });
 
       if (controller.signal.aborted) return;
 
-      const validMessages = messagesWithDetails.filter((m): m is api.EmailMessage => m !== null);
+      // Afficher les messages immédiatement (pas de blocage)
+      setMessages(mappedMessages);
 
-      // Classifier uniquement les messages qui n'ont pas encore de classification
-      const classifiedMessages = await Promise.all(
-        validMessages.map(async (msg) => {
-          // Si déjà classifié, garder la classification existante
-          if (msg.priority) {
-            return msg;
-          }
-          try {
-            const classification = await api.classifyEmail(msg.id, accountId, false);
-            return {
-              ...msg,
-              priority: classification.priority,
-              priority_score: classification.score,
-              priority_reason: classification.reason,
-              category: classification.category
-            };
-          } catch (err) {
-            console.error(`Failed to classify message ${msg.id}:`, err);
-            return msg;
-          }
-        })
-      );
-
-      if (controller.signal.aborted) return;
-
-      setMessages(classifiedMessages);
+      // Classifier en arrière-plan (ne bloque plus le refresh)
+      classifyInBackground(mappedMessages, accountId, controller);
     } catch (err) {
       if (controller.signal.aborted) return;
       console.error('Failed to load messages:', err);
@@ -145,10 +151,12 @@ export function EmailList({ accountId }: EmailListProps) {
         setError('Connexion Gmail expirée - reconnecte-toi.');
         setNeedsReauth(true);
       } else {
-        // Si on a du cache, ne pas afficher d'erreur bloquante
+        // BUG-061: Montrer l'erreur même avec du cache (avant c'était silencieux)
+        setError('Échec du rafraîchissement');
+        // Effacer l'erreur après 4s si on a du cache (non-bloquant)
         const stillHasCache = useEmailStore.getState().messages.length > 0;
-        if (!stillHasCache) {
-          setError('Impossible de charger les messages');
+        if (stillHasCache) {
+          setTimeout(() => setError(null), 4000);
         }
       }
     } finally {
@@ -157,6 +165,33 @@ export function EmailList({ accountId }: EmailListProps) {
         setRefreshing(false);
       }
       isLoadingRef.current = false;
+    }
+  }
+
+  // BUG-061: Classification en arrière-plan (ne bloque plus le refresh)
+  async function classifyInBackground(
+    msgs: api.EmailMessage[],
+    acctId: string,
+    controller: AbortController,
+  ) {
+    const unclassified = msgs.filter((m) => !m.priority);
+    if (unclassified.length === 0) return;
+
+    for (const msg of unclassified) {
+      if (controller.signal.aborted) return;
+      try {
+        const classification = await api.classifyEmail(msg.id, acctId, false);
+        if (controller.signal.aborted) return;
+        // Mettre à jour le message individuellement dans le store
+        updateMessage(msg.id, {
+          priority: classification.priority,
+          priority_score: classification.score,
+          priority_reason: classification.reason,
+          category: classification.category,
+        });
+      } catch {
+        // Classification échouée = pas grave, on continue
+      }
     }
   }
 
@@ -234,11 +269,17 @@ export function EmailList({ accountId }: EmailListProps) {
             <span className="text-sm font-medium text-accent-cyan">Mise à jour des messages...</span>
           </div>
         )}
+        {/* BUG-061: Erreur non-bloquante quand on a du cache */}
+        {error && messages.length > 0 && (
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-center py-2 bg-red-500/10 backdrop-blur-sm border-b border-red-500/20">
+            <span className="text-sm font-medium text-red-400">{error}</span>
+          </div>
+        )}
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-accent-cyan" />
           </div>
-        ) : error ? (
+        ) : error && messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
             <p className="text-sm text-red-400">{error}</p>
           </div>
