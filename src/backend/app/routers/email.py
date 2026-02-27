@@ -786,6 +786,11 @@ async def _list_messages_gmail(
         *(_enrich_one(msg) for msg in raw_messages)
     ) if raw_messages else []
 
+    # BUG-061b: log enrichment results for diagnosis
+    error_count = sum(1 for m in enriched_messages if m.get('error'))
+    if error_count:
+        logger.warning(f"Email enrichment: {len(enriched_messages) - error_count}/{len(enriched_messages)} OK, {error_count} errors")
+
     return {
         'messages': list(enriched_messages),
         'nextPageToken': result.get('nextPageToken'),

@@ -369,7 +369,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 {/* Input View */}
                 {viewState === 'input' && (
                   <motion.div

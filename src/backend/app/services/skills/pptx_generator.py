@@ -87,7 +87,7 @@ pptx (Presentation), pptx.util (Inches, Pt, Cm, Emu), pptx.dml.color (RGBColor),
    fill.solid()
    fill.fore_color.rgb = RGBColor(0x0B, 0x12, 0x26)
    ```
-5. **Titre de slide** : Outfit, 36pt, bold, blanc, position top-left
+5. **Titre de slide** : Outfit, 36pt, bold, couleur RGBColor(0xE6, 0xED, 0xF7) (text_primary #E6EDF7), position top-left
 6. **Barre accent cyan** sous chaque titre :
    ```python
    bar = slide.shapes.add_shape(1, Inches(0.75), Inches(1.4), Inches(2), Inches(0.05))

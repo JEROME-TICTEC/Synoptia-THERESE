@@ -88,6 +88,10 @@ export function EmailList({ accountId }: EmailListProps) {
 
       // BUG-061: Utiliser les données enrichies du list endpoint directement
       // Plus besoin de re-fetch chaque message individuellement (économise 50+ appels API)
+      const errorMessages = (result.messages as any[]).filter((msg) => msg.error);
+      if (errorMessages.length > 0) {
+        console.warn(`BUG-061b: ${errorMessages.length}/${result.messages.length} emails en erreur:`, errorMessages[0]?.error);
+      }
       const mappedMessages: api.EmailMessage[] = result.messages
         .filter((msg: any) => !msg.error)
         .map((msg: any) => {

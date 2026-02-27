@@ -526,7 +526,7 @@ class MCPService:
                 future.set_result(message.get("result"))
 
     async def _send_request(
-        self, server_id: str, method: str, params: dict | None = None, timeout: float = 30.0,
+        self, server_id: str, method: str, params: dict | None = None, timeout: float = 60.0,
     ) -> Any:
         """Send a JSON-RPC request to an MCP server."""
         import time
@@ -662,7 +662,7 @@ class MCPService:
             result = await self._send_request(server_id, "tools/call", {
                 "name": tool_name,
                 "arguments": arguments or {},
-            })
+            }, timeout=120.0)
 
             execution_time = (time.time() - start_time) * 1000
 

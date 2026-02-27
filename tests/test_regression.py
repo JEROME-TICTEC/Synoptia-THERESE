@@ -3769,6 +3769,136 @@ class TestBUG058_BoardCloudProviderModel:
 # ============================================================
 
 
+# ============================================================
+# BUG-063 : Ollama modèle ignoré dans _default_config
+# Le chat utilise get_llm_service() → _default_config() qui doit
+# lire correctement le modèle depuis la DB (pas juste le Board).
+# ============================================================
+
+
+class TestBUG063_OllamaModelDefaultConfig:
+    """_default_config() doit logger et lire correctement les préférences Ollama."""
+
+    LLM_PY = SRC / "app" / "services" / "llm.py"
+
+    def test_default_config_has_warning_logging(self):
+        content = self.LLM_PY.read_text(encoding="utf-8")
+        assert "logger.warning" in content and "Could not read LLM preferences" in content, (
+            "_default_config doit logger en WARNING (pas debug) quand la lecture DB échoue (BUG-063)"
+        )
+
+    def test_default_config_logs_preferences_read(self):
+        content = self.LLM_PY.read_text(encoding="utf-8")
+        assert "LLM preferences from DB:" in content, (
+            "_default_config doit logger les préférences lues depuis la DB (BUG-063)"
+        )
+
+    def test_default_config_sqlite_timeout(self):
+        content = self.LLM_PY.read_text(encoding="utf-8")
+        assert 'connect_args={"timeout": 5}' in content or "connect_args" in content, (
+            "_default_config doit utiliser un timeout SQLite pour éviter les locks (BUG-063)"
+        )
+
+
+# ============================================================
+# BUG-064 : Board souverain vierge au premier lancement
+# AnimatePresence enfant doit avoir initial={false} pour ne pas
+# jouer l'animation d'entrée au premier montage.
+# ============================================================
+
+
+class TestBUG064_BoardFirstMount:
+    """BoardPanel AnimatePresence enfant ne doit pas animer au premier montage."""
+
+    BOARD_TSX = Path("src/frontend/src/components/board/BoardPanel.tsx")
+
+    def test_animate_presence_initial_false(self):
+        content = self.BOARD_TSX.read_text(encoding="utf-8")
+        assert "initial={false}" in content, (
+            "AnimatePresence mode='wait' doit avoir initial={false} pour éviter le blank au premier montage (BUG-064)"
+        )
+
+
+# ============================================================
+# BUG-065 : PPTX titre blanc invisible
+# Le prompt pptx_generator ne doit plus dire "blanc" mais
+# utiliser la couleur text_primary #E6EDF7.
+# ============================================================
+
+
+class TestBUG065_PPTXTitleColor:
+    """Le prompt PPTX ne doit plus dire 'blanc' pour les titres."""
+
+    PPTX_GEN = SRC / "app" / "services" / "skills" / "pptx_generator.py"
+
+    def test_no_blanc_in_title_prompt(self):
+        content = self.PPTX_GEN.read_text(encoding="utf-8")
+        # Le mot "blanc" ne doit plus apparaître dans la ligne du titre
+        for line in content.splitlines():
+            if "Titre de slide" in line:
+                assert "blanc" not in line.lower(), (
+                    "Le prompt PPTX ne doit plus dire 'blanc' pour les titres, utiliser #E6EDF7 (BUG-065)"
+                )
+                assert "E6EDF7" in line or "0xE6" in line, (
+                    "Le prompt PPTX doit utiliser la couleur text_primary #E6EDF7 pour les titres (BUG-065)"
+                )
+                break
+        else:
+            pytest.fail("Ligne 'Titre de slide' introuvable dans pptx_generator.py")
+
+
+# ============================================================
+# BUG-062b : MCP tool calls timeout 30s trop court
+# Le timeout par défaut de _send_request doit être >= 60s,
+# et tools/call doit avoir un timeout >= 120s.
+# ============================================================
+
+
+class TestBUG062b_MCPToolCallTimeout:
+    """MCP _send_request timeout doit être suffisant pour les outils lents."""
+
+    MCP_PY = SRC / "app" / "services" / "mcp_service.py"
+
+    def test_default_timeout_increased(self):
+        content = self.MCP_PY.read_text(encoding="utf-8")
+        # Le timeout par défaut de _send_request doit être >= 60s
+        assert "timeout: float = 60.0" in content, (
+            "_send_request timeout par défaut doit être 60s (BUG-062b)"
+        )
+
+    def test_tools_call_timeout_increased(self):
+        content = self.MCP_PY.read_text(encoding="utf-8")
+        assert "timeout=120.0" in content, (
+            "tools/call doit avoir un timeout de 120s (BUG-062b)"
+        )
+
+
+# ============================================================
+# BUG-061b : Email refresh silencieux
+# Le backend doit logger les erreurs d'enrichissement,
+# et le frontend doit logger les messages en erreur.
+# ============================================================
+
+
+class TestBUG061b_EmailRefreshDiag:
+    """Email refresh doit diagnostiquer les erreurs au lieu de les avaler."""
+
+    EMAIL_PY = SRC / "app" / "routers" / "email.py"
+    EMAIL_LIST_TSX = Path("src/frontend/src/components/email/EmailList.tsx")
+
+    def test_backend_logs_enrichment_errors(self):
+        content = self.EMAIL_PY.read_text(encoding="utf-8")
+        assert "Email enrichment:" in content, (
+            "Le backend doit logger le nombre d'erreurs d'enrichissement (BUG-061b)"
+        )
+
+    def test_frontend_logs_error_messages(self):
+        content = self.EMAIL_LIST_TSX.read_text(encoding="utf-8")
+        assert "BUG-061b" in content, (
+            "Le frontend doit logger les emails en erreur avec console.warn (BUG-061b)"
+        )
+
+
 class TestBUG059_EmailReAuthPolling:
     """Le wizard email doit détecter la re-auth via updated_at."""
 

@@ -261,7 +261,8 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
             from app.config import settings
             from sqlalchemy import create_engine, text
 
-            engine = create_engine(f"sqlite:///{settings.db_path}")
+            # timeout=5 pour éviter "database is locked" si l'engine async a une transaction ouverte
+            engine = create_engine(f"sqlite:///{settings.db_path}", connect_args={"timeout": 5})
             with engine.connect() as conn:
                 for key in ("llm_provider", "llm_model"):
                     result = conn.execute(
@@ -275,7 +276,9 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
                         else:
                             selected_model = row[0]
         except Exception as e:
-            logger.debug(f"Could not read LLM preferences: {e}")
+            logger.warning(f"Could not read LLM preferences from DB: {e}")
+
+        logger.info(f"LLM preferences from DB: provider={selected_provider}, model={selected_model}")
 
         # Provider configs: (enum, default_model, context_window)
         provider_configs = {
@@ -294,6 +297,7 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
             model = selected_model or default_model
 
             if selected_provider == "ollama":
+                logger.info(f"Ollama config: model={model} (selected={selected_model}, default={default_model})")
                 return LLMConfig(provider_enum, model, base_url="http://localhost:11434", context_window=ctx_window)
 
             api_key = _get_api_key_from_db(selected_provider)
@@ -328,7 +332,9 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
         elif mistral_key:
             return LLMConfig(LLMProvider.MISTRAL, "mistral-large-latest", api_key=mistral_key, context_window=256000)
         else:
-            return LLMConfig(LLMProvider.OLLAMA, selected_model or "mistral-nemo", base_url="http://localhost:11434", context_window=32000)
+            fallback_model = selected_model or "mistral-nemo"
+            logger.warning(f"No API key configured, falling back to Ollama: model={fallback_model}")
+            return LLMConfig(LLMProvider.OLLAMA, fallback_model, base_url="http://localhost:11434", context_window=32000)
 
     async def _get_client(self):
         """Get shared HTTP client from global pool."""
