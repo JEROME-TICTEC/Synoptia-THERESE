@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Plus, Globe, X, Shield } from 'lucide-react';
+import { Loader2, Plus, Globe, X, Shield, Square } from 'lucide-react';
 import { AdvisorCard } from './AdvisorCard';
 import { SynthesisCard } from './SynthesisCard';
 import { Button } from '../ui/Button';
@@ -33,6 +33,7 @@ interface DeliberationViewProps {
   synthesis: BoardSynthesis | null;
   isSynthesizing: boolean;
   isComplete: boolean;
+  onCancel?: () => void;
   onNewDeliberation?: () => void;
   onClose?: () => void;
 }
@@ -45,6 +46,7 @@ export function DeliberationView({
   synthesis,
   isSynthesizing,
   isComplete,
+  onCancel,
   onNewDeliberation,
   onClose,
 }: DeliberationViewProps) {
@@ -125,6 +127,17 @@ export function DeliberationView({
                 : `${completedCount}/${totalAdvisors}`
             }
           </span>
+          {onCancel && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              className="text-red-400 hover:text-red-300 hover:bg-red-400/10 gap-1.5 shrink-0"
+            >
+              <Square className="w-3.5 h-3.5 fill-current" />
+              Annuler
+            </Button>
+          )}
         </div>
       )}
 

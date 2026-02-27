@@ -13,6 +13,7 @@ export interface EmailAccount {
   scopes: string[];
   created_at: string;
   last_sync: string | null;
+  updated_at?: string | null;
 }
 
 export interface EmailMessage {

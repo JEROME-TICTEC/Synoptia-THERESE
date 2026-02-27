@@ -62,13 +62,15 @@ export async function getAdvisor(role: AdvisorRole): Promise<AdvisorInfo> {
 }
 
 export async function* streamDeliberation(
-  req: BoardRequest
+  req: BoardRequest,
+  signal?: AbortSignal
 ): AsyncGenerator<BoardDeliberationChunk> {
   const url = `${API_BASE}/api/board/deliberate`;
   const response = await apiFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
+    signal,
   });
 
   if (!response.ok) {

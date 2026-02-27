@@ -535,6 +535,8 @@ def get_llm_service_for_provider(provider_name: str, model_override: str | None 
     provider, default_model, env_vars, context_window = provider_configs[provider_name]
 
     # BUG-052 : lire le modèle sélectionné par l'utilisateur depuis la DB
+    # Uniquement si le provider demandé correspond au provider principal de l'utilisateur
+    # (sinon on enverrait "claude-opus-4-6" à GPT/Gemini/Grok → crash Board cloud)
     user_model = None
     try:
         from app.config import settings
@@ -542,12 +544,20 @@ def get_llm_service_for_provider(provider_name: str, model_override: str | None 
 
         engine = create_engine(f"sqlite:///{settings.db_path}")
         with engine.connect() as conn:
-            result = conn.execute(
-                text("SELECT value FROM preferences WHERE key = 'llm_model'"),
-            )
-            row = result.fetchone()
-            if row and row[0]:
-                user_model = row[0]
+            # Lire le provider principal de l'utilisateur
+            prov_row = conn.execute(
+                text("SELECT value FROM preferences WHERE key = 'llm_provider'"),
+            ).fetchone()
+            user_provider = (prov_row[0] if prov_row and prov_row[0] else "").lower()
+
+            # N'appliquer le modèle utilisateur que si le provider correspond
+            if user_provider == provider_name or (provider_name == "ollama" and user_provider == "ollama"):
+                result = conn.execute(
+                    text("SELECT value FROM preferences WHERE key = 'llm_model'"),
+                )
+                row = result.fetchone()
+                if row and row[0]:
+                    user_model = row[0]
     except Exception:
         pass
     model = model_override or user_model or default_model

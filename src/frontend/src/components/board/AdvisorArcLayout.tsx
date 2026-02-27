@@ -38,9 +38,28 @@ const ADVISOR_META: Record<AdvisorRole, { name: string; color: string; personali
 const ROLES: AdvisorRole[] = ['analyst', 'strategist', 'devil', 'pragmatic', 'visionary'];
 const ARC_ANGLES = [-50, -25, 0, 25, 50]; // Degrees for 5 cards
 
+export interface OllamaModelInfo {
+  name: string;
+  size: number; // bytes
+  paramSize?: string; // e.g. "7B", "14B"
+}
+
+function formatSize(bytes: number): string {
+  if (bytes === 0) return '';
+  const gb = bytes / 1_073_741_824;
+  return gb >= 1 ? `${gb.toFixed(1)} Go` : `${(bytes / 1_048_576).toFixed(0)} Mo`;
+}
+
+function sizeColor(bytes: number): string {
+  const gb = bytes / 1_073_741_824;
+  if (gb < 4) return 'text-green-400';
+  if (gb < 8) return 'text-yellow-400';
+  return 'text-red-400';
+}
+
 interface AdvisorArcLayoutProps {
   mode: BoardMode;
-  ollamaModels: string[];
+  ollamaModels: OllamaModelInfo[];
   selectedModels: Record<string, string>;
   onModelChange: (role: string, model: string) => void;
 }
@@ -51,8 +70,28 @@ export function AdvisorArcLayout({
   selectedModels,
   onModelChange,
 }: AdvisorArcLayoutProps) {
+  const defaultModel = ollamaModels[0]?.name || 'mistral-nemo';
+
   return (
     <div className="relative py-4">
+      {/* Hardware recommendation (sovereign mode) */}
+      {mode === 'sovereign' && ollamaModels.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mb-4 px-4 py-2.5 rounded-lg bg-surface-elevated/60 border border-border/40 text-center space-y-1"
+        >
+          <p className="text-xs text-text-muted">
+            <span className="text-green-400">&#9679;</span> &lt; 4 Go (8 Go RAM)
+            {' '}<span className="text-yellow-400 ml-2">&#9679;</span> 4-8 Go (16 Go RAM)
+            {' '}<span className="text-red-400 ml-2">&#9679;</span> &gt; 8 Go (32 Go+ RAM)
+          </p>
+          <p className="text-[10px] text-text-muted/70">
+            Choisissez des modèles adaptés à votre machine pour éviter les ralentissements
+          </p>
+        </motion.div>
+      )}
+
       {/* Arc layout for md+ screens */}
       <div className="hidden md:flex justify-center items-end gap-3 min-h-[220px]">
         {ROLES.map((role, i) => {
@@ -99,12 +138,14 @@ export function AdvisorArcLayout({
               {/* Ollama model selector (sovereign mode) */}
               {mode === 'sovereign' && ollamaModels.length > 0 && (
                 <select
-                  value={selectedModels[role] || ollamaModels[0] || 'mistral-nemo'}
+                  value={selectedModels[role] || defaultModel}
                   onChange={(e) => onModelChange(role, e.target.value)}
                   className="mt-1.5 w-full text-[10px] px-1.5 py-1 bg-surface border border-border/50 rounded text-text-muted focus:outline-none focus:ring-1 focus:ring-accent-magenta/50"
                 >
                   {ollamaModels.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+                    <option key={m.name} value={m.name} className={sizeColor(m.size)}>
+                      {m.name} {m.size > 0 ? `(${formatSize(m.size)})` : ''}
+                    </option>
                   ))}
                 </select>
               )}
@@ -142,12 +183,14 @@ export function AdvisorArcLayout({
 
               {mode === 'sovereign' && ollamaModels.length > 0 && (
                 <select
-                  value={selectedModels[role] || ollamaModels[0] || 'mistral-nemo'}
+                  value={selectedModels[role] || defaultModel}
                   onChange={(e) => onModelChange(role, e.target.value)}
                   className="mt-1 w-full text-[9px] px-1 py-0.5 bg-surface border border-border/50 rounded text-text-muted"
                 >
                   {ollamaModels.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+                    <option key={m.name} value={m.name}>
+                      {m.name} {m.size > 0 ? `(${formatSize(m.size)})` : ''}
+                    </option>
                   ))}
                 </select>
               )}

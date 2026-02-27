@@ -58,10 +58,11 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
     synthesis: BoardSynthesis;
   } | null>(null);
   const [mode, setMode] = useState<BoardMode>('cloud');
-  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [ollamaModels, setOllamaModels] = useState<Array<{ name: string; size: number; paramSize?: string }>>([]);
   const [selectedModels, setSelectedModels] = useState<Record<string, string>>({});
   const [ollamaAvailable, setOllamaAvailable] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Check Ollama availability on mount
   useEffect(() => {
@@ -70,7 +71,15 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
       .then((data) => {
         if (data.models?.length > 0) {
           setOllamaAvailable(true);
-          setOllamaModels(data.models.map((m: { name: string }) => m.name));
+          setOllamaModels(
+            data.models
+              .map((m: { name: string; size: number; details?: { parameter_size?: string } }) => ({
+                name: m.name,
+                size: m.size || 0,
+                paramSize: m.details?.parameter_size,
+              }))
+              .sort((a: { size: number }, b: { size: number }) => a.size - b.size)
+          );
         }
       })
       .catch(() => setOllamaAvailable(false));
@@ -97,8 +106,22 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
     onClose();
   }, [resetDeliberation, onClose]);
 
+  const handleCancelDeliberation = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    resetDeliberation();
+    setViewState('input');
+  }, [resetDeliberation]);
+
   const handleStartDeliberation = useCallback(async () => {
     if (!question.trim()) return;
+
+    // Annuler une éventuelle délibération précédente
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     resetDeliberation();
     setViewState('deliberating');
@@ -109,9 +132,11 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
         context: context.trim() || undefined,
         mode,
         ollama_models: mode === 'sovereign' ? selectedModels : undefined,
-      });
+      }, controller.signal);
 
       for await (const chunk of stream) {
+        if (controller.signal.aborted) break;
+
         switch (chunk.type) {
           case 'web_search_start':
             setIsSearchingWeb(true);
@@ -186,6 +211,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
 
           case 'done':
             setIsComplete(true);
+            abortRef.current = null;
             break;
 
           case 'error':
@@ -194,9 +220,13 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
         }
       }
     } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        // Annulation volontaire - pas d'erreur
+        return;
+      }
       console.error('Stream error:', error);
     }
-  }, [question, context, resetDeliberation]);
+  }, [question, context, mode, selectedModels, resetDeliberation]);
 
   const handleShowHistory = useCallback(async () => {
     setLoadingHistory(true);
@@ -453,6 +483,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
                       synthesis={synthesis}
                       isSynthesizing={isSynthesizing}
                       isComplete={isComplete}
+                      onCancel={!isComplete ? handleCancelDeliberation : undefined}
                       onNewDeliberation={handleNewDeliberation}
                       onClose={handleCloseAndReset}
                     />

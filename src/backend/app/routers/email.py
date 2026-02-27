@@ -499,6 +499,7 @@ async def get_auth_status(
                 'email': acc.email,
                 'provider': acc.provider,
                 'last_sync': acc.last_sync.isoformat() if acc.last_sync else None,
+                'updated_at': acc.updated_at.isoformat() if getattr(acc, 'updated_at', None) else None,
             }
             for acc in accounts
         ],

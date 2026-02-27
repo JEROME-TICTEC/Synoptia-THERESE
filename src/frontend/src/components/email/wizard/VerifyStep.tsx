@@ -33,6 +33,7 @@ export function VerifyStep({ clientId, clientSecret, onBack, onSuccess }: Verify
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialAccountCountRef = useRef<number>(0);
+  const initialAccountsRef = useRef<Map<string, string>>(new Map()); // id -> updated_at
 
   useEffect(() => {
     startOAuthFlow();
@@ -48,9 +49,14 @@ export function VerifyStep({ clientId, clientSecret, onBack, onSuccess }: Verify
     setAuthUrl(null);
 
     try {
-      // Mémoriser le nombre de comptes existants avant l'autorisation
+      // Mémoriser les comptes existants avant l'autorisation
       const currentStatus = await api.getEmailAuthStatus();
       initialAccountCountRef.current = currentStatus.accounts?.length || 0;
+      const snap = new Map<string, string>();
+      for (const acc of currentStatus.accounts || []) {
+        snap.set(acc.id, acc.updated_at || '');
+      }
+      initialAccountsRef.current = snap;
 
       // Initier le flow OAuth
       const flow = await api.initiateEmailOAuth(clientId, clientSecret);
@@ -71,19 +77,33 @@ export function VerifyStep({ clientId, clientSecret, onBack, onSuccess }: Verify
       pollRef.current = setInterval(async () => {
         try {
           const status = await api.getEmailAuthStatus();
-          const newAccountCount = status.accounts?.length || 0;
+          const accounts = status.accounts || [];
+          const newAccountCount = accounts.length;
 
-          // Un nouveau compte a été ajouté
+          // Détecter un nouveau compte OU une re-autorisation (updated_at changé)
+          let detectedAccount = null;
+
           if (newAccountCount > initialAccountCountRef.current) {
+            // Nouveau compte ajouté
+            detectedAccount = accounts[accounts.length - 1];
+          } else {
+            // Re-auth : chercher un compte dont updated_at a changé
+            for (const acc of accounts) {
+              const prevUpdatedAt = initialAccountsRef.current.get(acc.id);
+              if (prevUpdatedAt !== undefined && acc.updated_at && acc.updated_at !== prevUpdatedAt) {
+                detectedAccount = acc;
+                break;
+              }
+            }
+          }
+
+          if (detectedAccount) {
             if (pollRef.current) clearInterval(pollRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-            const newAccount = status.accounts[status.accounts.length - 1];
-            setAccountEmail(newAccount.email);
+            setAccountEmail(detectedAccount.email);
             setState('success');
           }
         } catch (err) {
-          // Ignorer les erreurs de polling (réseau temporaire, etc.)
           console.warn('Polling auth status failed:', err);
         }
       }, POLL_INTERVAL_MS);
