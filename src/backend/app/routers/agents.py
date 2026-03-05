@@ -34,12 +34,25 @@ router = APIRouter()
 
 
 def _get_source_path() -> str | None:
-    """Récupère le chemin du source configuré."""
+    """Récupère le chemin du source configuré.
 
-    # Priorité : préférence DB > env var > défaut
-    # Pour l'instant, on utilise un défaut raisonnable
+    Priorité : env var > auto-détection (racine du projet si on est dans un repo git).
+    """
     import os
-    return os.environ.get("THERESE_SOURCE_PATH")
+    from pathlib import Path
+
+    # 1. Variable d'environnement explicite
+    env_path = os.environ.get("THERESE_SOURCE_PATH")
+    if env_path:
+        return env_path
+
+    # 2. Auto-détection : remonter depuis le backend jusqu'à la racine du projet
+    # src/backend/app/routers/agents.py → 4 niveaux = racine projet
+    project_root = Path(__file__).resolve().parent.parent.parent.parent.parent
+    if (project_root / ".git").exists() and (project_root / "src" / "backend").exists():
+        return str(project_root)
+
+    return None
 
 
 async def _save_task(session: AsyncSession, task: AgentTask) -> None:
