@@ -9,7 +9,7 @@ import logging
 from datetime import UTC, datetime
 
 from app.models.database import get_session
-from app.models.entities_agents import AgentMessage, AgentTask, CodeChange
+from app.models.entities_agents import AgentMessage, AgentTask
 from app.models.schemas_agents import (
     AgentConfigResponse,
     AgentConfigUpdate,
@@ -35,7 +35,6 @@ router = APIRouter()
 
 def _get_source_path() -> str | None:
     """Récupère le chemin du source configuré."""
-    from app.config import settings
 
     # Priorité : préférence DB > env var > défaut
     # Pour l'instant, on utilise un défaut raisonnable

@@ -6,9 +6,8 @@ Database models for the embedded AI agent system (Atelier).
 
 from datetime import UTC, datetime
 
-from sqlmodel import Field, SQLModel
-
 from app.models.entities import generate_uuid
+from sqlmodel import Field, SQLModel
 
 
 class AgentTask(SQLModel, table=True):

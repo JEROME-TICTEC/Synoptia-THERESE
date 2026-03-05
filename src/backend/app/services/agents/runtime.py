@@ -83,7 +83,8 @@ class AgentRuntime:
 
         Yields AgentEvent pour chaque étape (chunks de texte, appels d'outils, résultats).
         """
-        from app.services.llm import LLMService, Message as LLMMessage, get_llm_service
+        from app.services.llm import Message as LLMMessage
+        from app.services.llm import get_llm_service
 
         # Obtenir le service LLM
         llm_service = get_llm_service()

@@ -93,8 +93,10 @@ async def init_db() -> None:
 
     # Create tables using sync engine
     # Import models to register them with SQLModel
-    from app.models import entities  # noqa: F401
-    from app.models import entities_agents  # noqa: F401 - Agent system tables
+    from app.models import (
+        entities,  # noqa: F401
+        entities_agents,  # noqa: F401 - Agent system tables
+    )
     from app.services import audit  # noqa: F401 - ActivityLog model
 
     SQLModel.metadata.create_all(sync_engine)

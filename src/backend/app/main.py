@@ -31,6 +31,7 @@ except ImportError:
     from collections import defaultdict as _defaultdict
 from app.models.database import close_db, init_db
 from app.routers import (
+    agents_router,  # v0.5 - Agents IA Embarqués (Atelier)
     board_router,
     calc_router,
     calendar_router,  # Phase 2 - ACTIVATED
@@ -55,7 +56,6 @@ from app.routers import (
     tasks_router,  # Phase 3 - ACTIVATED
     tools_router,  # V3 - Installed Tools
     voice_router,
-    agents_router,  # v0.5 - Agents IA Embarqués (Atelier)
 )
 from app.services import close_qdrant, init_qdrant
 from app.services.mcp_service import get_mcp_service, initialize_mcp_service

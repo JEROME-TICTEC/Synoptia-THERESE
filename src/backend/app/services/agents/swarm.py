@@ -5,17 +5,15 @@ Orchestre le flow : User → Thérèse (PM) → Zézette (Dev) → Review.
 Communication via asyncio.Queue (pattern board.py).
 """
 
-import asyncio
 import json
 import logging
 import re
-from datetime import UTC, datetime
 from typing import AsyncGenerator
 
 from app.models.schemas_agents import AgentStreamChunk
 from app.services.agents.config import get_agent_config
 from app.services.agents.git_service import GitService
-from app.services.agents.runtime import AgentEvent, AgentRuntime
+from app.services.agents.runtime import AgentRuntime
 from app.services.agents.tools import (
     THERESE_TOOLS,
     ZEZETTE_TOOLS,
@@ -237,12 +235,12 @@ Tu es sur la branche `{branch_name}`. Implémente les changements demandés.
         )
 
         # Commit les changements
-        commit_hash = await self.git.commit(
+        await self.git.commit(
             f"[agent] {spec_content.split(chr(10))[0][:80]}"
         )
 
         # --- Phase 4 : Générer le diff et préparer la review ---
-        diff_patch = await self.git.diff(base=original_branch)
+        await self.git.diff(base=original_branch)  # Génère le diff pour review
         files_changed = await self.git.diff_files(base=original_branch)
         additions, deletions = await self.git.count_changes(base=original_branch)
         diff_stat = await self.git.diff_stat(base=original_branch)
