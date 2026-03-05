@@ -2,7 +2,7 @@
 // Refonte v0.4.0 : 8 onglets → 6, sidebar verticale, UX simplifiée
 
 import { useState, useEffect } from 'react';
-import { X, User, Cpu, Layers, Wrench, SlidersHorizontal, Info, Loader2 } from 'lucide-react';
+import { X, User, Cpu, Layers, Wrench, SlidersHorizontal, Info, Loader2, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from '../ui/Button';
@@ -16,19 +16,21 @@ import { ServicesTab } from './ServicesTab';
 import { ToolsPanel } from './ToolsPanel';
 import { AdvancedTab } from './AdvancedTab';
 import { AboutTab } from './AboutTab';
+import { AgentsTab } from './AgentsTab';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type Tab = 'profile' | 'ai' | 'services' | 'tools' | 'advanced' | 'about';
+type Tab = 'profile' | 'ai' | 'services' | 'tools' | 'agents' | 'advanced' | 'about';
 
 const TABS: { id: Tab; label: string; icon: typeof User }[] = [
   { id: 'profile', label: 'Profil', icon: User },
   { id: 'ai', label: 'IA', icon: Cpu },
   { id: 'services', label: 'Services', icon: Layers },
   { id: 'tools', label: 'Outils', icon: Wrench },
+  { id: 'agents', label: 'Agents', icon: Zap },
   { id: 'advanced', label: 'Avancé', icon: SlidersHorizontal },
   { id: 'about', label: 'À propos', icon: Info },
 ];
@@ -541,6 +543,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             onRefreshStats={refreshStats}
           />
         );
+      case 'agents':
+        return <AgentsTab />;
       case 'about':
         return <AboutTab />;
     }

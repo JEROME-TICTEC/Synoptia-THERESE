@@ -1,4 +1,4 @@
-import { Settings, Mail, Calendar, CheckSquare, FileText, Users, Briefcase } from 'lucide-react';
+import { Settings, Mail, Calendar, CheckSquare, FileText, Users, Briefcase, Zap } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useChatStore } from '../../stores/chatStore';
 import { useDemoStore } from '../../stores/demoStore';
@@ -13,6 +13,7 @@ interface ChatHeaderProps {
   onToggleCRMPanel?: () => void;
   onToggleMemoryPanel?: () => void;
   onToggleBoardPanel?: () => void;
+  onToggleAtelierPanel?: () => void;
 }
 
 export function ChatHeader({
@@ -24,6 +25,7 @@ export function ChatHeader({
   onToggleCRMPanel,
   onToggleMemoryPanel,
   onToggleBoardPanel,
+  onToggleAtelierPanel,
 }: ChatHeaderProps) {
   const { createConversation, currentConversation } = useChatStore();
   const demoEnabled = useDemoStore((s) => s.enabled);
@@ -152,6 +154,16 @@ export function ChatHeader({
             <circle cx="12.9" cy="29.7" r="3" stroke="#F59E0B" strokeWidth="1.5" />
             <circle cx="8.6" cy="16.3" r="3" stroke="#E11D8D" strokeWidth="1.5" />
           </svg>
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleAtelierPanel}
+          className="w-8 h-8 hover:bg-purple-500/15"
+          title={isMac ? 'Atelier (⌘⇧A)' : 'Atelier (Ctrl+Shift+A)'}
+        >
+          <Zap className="w-4 h-4 text-purple-400" />
         </Button>
 
         <Button

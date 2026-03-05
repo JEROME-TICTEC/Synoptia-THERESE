@@ -43,6 +43,9 @@ from app.routers.tasks import router as tasks_router
 from app.routers.tools import router as tools_router
 from app.routers.voice import router as voice_router
 
+# v0.5 - Agents IA Embarqués (Atelier)
+from app.routers.agents import router as agents_router
+
 __all__ = [
     "chat_router",
     "memory_router",
@@ -68,4 +71,5 @@ __all__ = [
     "commands_router",  # User Commands
     "commands_v3_router",  # V3 - Commands unifiées
     "tools_router",  # V3 - Installed Tools
+    "agents_router",  # v0.5 - Agents IA Embarqués (Atelier)
 ]

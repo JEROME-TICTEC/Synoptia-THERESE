@@ -12,12 +12,14 @@ import { ProjectModal } from '../memory/ProjectModal';
 import { SettingsModal } from '../settings/SettingsModal';
 import { ConversationSidebar } from '../sidebar/ConversationSidebar';
 import { BoardPanel } from '../board';
+import { AtelierPanel } from '../atelier';
 import { DropZone } from '../files/DropZone';
 import { SideToggle } from '../ui/SideToggle';
 import { ConnectionStatus } from '../ui/ConnectionStatus';
 import { useKeyboardShortcuts, useConversationSync, useFileDrop } from '../../hooks';
 import { useChatStore } from '../../stores/chatStore';
 import { useDemoStore } from '../../stores/demoStore';
+import { useAtelierStore } from '../../stores/atelierStore';
 import { openPanelWindow } from '../../services/windowManager';
 import * as api from '../../services/api';
 import { listUserCommands, createUserCommand, type UserCommand } from '../../services/api/commands';
@@ -44,6 +46,7 @@ export function ChatLayout() {
 
   const { createConversation, currentConversationId } = useChatStore();
   const toggleDemo = useDemoStore((s) => s.toggle);
+  const toggleAtelier = useAtelierStore((s) => s.togglePanel);
 
   // Reset guidedPanelActive quand la conversation change (BUG-070)
   useEffect(() => {
@@ -249,6 +252,10 @@ export function ChatLayout() {
     openPanelWindow('crm');
   }, []);
 
+  const handleToggleAtelierPanel = useCallback(() => {
+    toggleAtelier();
+  }, [toggleAtelier]);
+
   // Global keyboard shortcuts
   useKeyboardShortcuts({
     onCommandPalette: handleOpenCommandPalette,
@@ -266,6 +273,7 @@ export function ChatLayout() {
     onToggleTasksPanel: handleToggleTasksPanel,
     onToggleInvoicesPanel: handleToggleInvoicesPanel,
     onToggleCRMPanel: handleToggleCRMPanel,
+    onToggleAtelierPanel: handleToggleAtelierPanel,
     onToggleDemoMode: handleToggleDemoMode,
     onSearch: () => {
       setShowMemoryPanel(true);
@@ -306,6 +314,7 @@ export function ChatLayout() {
         onToggleCRMPanel={handleToggleCRMPanel}
         onToggleMemoryPanel={() => openPanelWindow('memory')}
         onToggleBoardPanel={handleToggleBoardPanel}
+        onToggleAtelierPanel={handleToggleAtelierPanel}
       />
 
       {/* Messages area */}
@@ -394,6 +403,9 @@ export function ChatLayout() {
         isOpen={showBoardPanel}
         onClose={handleCloseBoardPanel}
       />
+
+      {/* Atelier - Agents IA Embarqués */}
+      <AtelierPanel />
 
       {/* Modal Sauvegarder comme raccourci */}
       <AnimatePresence>

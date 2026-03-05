@@ -55,6 +55,7 @@ from app.routers import (
     tasks_router,  # Phase 3 - ACTIVATED
     tools_router,  # V3 - Installed Tools
     voice_router,
+    agents_router,  # v0.5 - Agents IA Embarqués (Atelier)
 )
 from app.services import close_qdrant, init_qdrant
 from app.services.mcp_service import get_mcp_service, initialize_mcp_service
@@ -499,6 +500,9 @@ app.include_router(commands_v3_router, prefix="/api/v3/commands", tags=["Command
 
 # V3 - Installed Tools
 app.include_router(tools_router, prefix="/api/tools", tags=["Tools"])
+
+# v0.5 - Agents IA Embarqués (Atelier)
+app.include_router(agents_router, prefix="/api/agents", tags=["Agents"])
 
 
 # Health endpoints

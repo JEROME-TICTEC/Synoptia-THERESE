@@ -425,6 +425,29 @@ export {
   type ToolTestResponse,
 } from './tools';
 
+// Agents - IA Embarqués (Atelier)
+export {
+  streamAgentRequest,
+  listAgentTasks,
+  getAgentTask,
+  getTaskDiff,
+  approveTask,
+  rejectTask,
+  rollbackTask,
+  getAgentConfig,
+  updateAgentConfig,
+  getAgentStatus,
+  type AgentId,
+  type MissionPhase,
+  type AgentStreamChunk,
+  type AgentTaskResponse,
+  type AgentTaskListResponse,
+  type DiffFile,
+  type DiffResponse,
+  type AgentConfigResponse,
+  type AgentStatusResponse,
+} from './agents';
+
 // RGPD - Conformité données personnelles
 export {
   exportContactRGPD,

@@ -19,6 +19,7 @@ interface ShortcutHandlers {
   onOpenFile?: () => void;
   onEscape?: () => void;
   onToggleDemoMode?: () => void;
+  onToggleAtelierPanel?: () => void;
 }
 
 /**
@@ -145,6 +146,13 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
       if (key === 'p' && !event.shiftKey) {
         event.preventDefault();
         handlers.onToggleCRMPanel?.();
+        return;
+      }
+
+      // Cmd+Shift+A - Toggle Atelier (agents IA)
+      if (key === 'a' && event.shiftKey) {
+        event.preventDefault();
+        handlers.onToggleAtelierPanel?.();
         return;
       }
 
