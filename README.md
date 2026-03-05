@@ -12,7 +12,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0-blue.svg" alt="AGPL-3.0 License" /></a>
   <a href="https://github.com/ludovicsanchez38-creator/Synoptia-THERESE/actions"><img src="https://img.shields.io/github/actions/workflow/status/ludovicsanchez38-creator/Synoptia-THERESE/ci.yml?branch=main&label=CI" alt="CI" /></a>
-  <img src="https://img.shields.io/badge/version-0.3.3--alpha-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.5.0--alpha-orange" alt="Version" />
 </p>
 
 <p align="center">
@@ -32,6 +32,20 @@
 - **Recherche web** - Brave Search intégré
 - **Dictée vocale** - Parle, THÉRÈSE écrit
 - **Local-first** - Données chiffrées sur ta machine, rien dans le cloud
+- **Atelier IA (v0.5)** - Deux agents embarqués qui améliorent l'app pour toi (voir ci-dessous)
+
+## Atelier - Agents IA Embarqués (v0.5)
+
+THÉRÈSE embarque deux agents IA open source qui travaillent ensemble :
+
+- **Thérèse bot** (PM/Guide) : t'aide à comprendre l'app, traduit tes besoins en spécifications
+- **Zézette bot** (Dev) : implémente les changements sur une branche git, lance les tests
+
+**Comment ça marche** : tu décris ce que tu veux dans l'Atelier (`Cmd+Shift+A`), Thérèse comprend le besoin, Zézette code, et tu valides les changements avant qu'ils soient appliqués. Pas besoin de savoir coder.
+
+**Open source** : les prompts des agents (`SOUL.md`) sont livrés avec le code. Tu peux les personnaliser dans `~/.therese/agents/`. Tu fournis ta propre clé API (BYOK), on ne livre aucun token.
+
+**Compatible OpenClaw** : le format de configuration (agent.json + SOUL.md) est compatible avec [OpenClaw](https://github.com/anthropics/openclaw) (MIT).
 
 ## Télécharger (alpha)
 
@@ -84,7 +98,7 @@ make dev        # Lancer backend + Tauri en mode dev
 ```bash
 make dev              # Backend + Tauri simultanés
 make dev-backend      # Backend seul (uvicorn)
-make test             # Tous les tests (52 fichiers)
+make test             # Tous les tests
 make lint             # Vérifier le code (ruff + eslint)
 make build-release    # Build complète de production
 make help             # Toutes les commandes disponibles
@@ -112,6 +126,7 @@ Synoptia-THERESE/
 │   │   └── src-tauri/      # Configuration Rust (Tauri)
 │   └── backend/            # Python FastAPI
 │       └── app/            # Routers, services, models, providers
+│           └── agents/     # Configs Thérèse bot + Zézette bot (SOUL.md)
 ├── tests/                  # pytest + Vitest + Playwright
 ├── docs/                   # Documentation complète
 ├── scripts/                # Scripts de build et utilitaires
