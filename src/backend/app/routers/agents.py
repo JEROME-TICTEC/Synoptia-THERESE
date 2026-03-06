@@ -36,21 +36,54 @@ router = APIRouter()
 def _get_source_path() -> str | None:
     """Récupère le chemin du source configuré.
 
-    Priorité : env var > auto-détection (racine du projet si on est dans un repo git).
+    Priorité : DB > env var > auto-détection.
     """
     import os
     from pathlib import Path
 
-    # 1. Variable d'environnement explicite
+    # 1. Préférence en DB (configurée via l'onglet Agents dans les paramètres)
+    try:
+        import sqlite3
+
+        from app.config import settings
+
+        db_path = settings.db_path
+        if db_path and Path(db_path).exists():
+            conn = sqlite3.connect(str(db_path))
+            cursor = conn.execute(
+                "SELECT value FROM preferences WHERE key = 'agent_source_path'"
+            )
+            row = cursor.fetchone()
+            conn.close()
+            if row and row[0]:
+                p = Path(row[0])
+                if p.exists() and (p / ".git").exists():
+                    return str(p)
+    except Exception:
+        pass
+
+    # 2. Variable d'environnement explicite
     env_path = os.environ.get("THERESE_SOURCE_PATH")
     if env_path:
         return env_path
 
-    # 2. Auto-détection : remonter depuis le backend jusqu'à la racine du projet
-    # src/backend/app/routers/agents.py → 4 niveaux = racine projet
+    # 3. Auto-détection en mode dev (non empaquété)
+    # src/backend/app/routers/agents.py → 5 niveaux = racine projet
     project_root = Path(__file__).resolve().parent.parent.parent.parent.parent
     if (project_root / ".git").exists() and (project_root / "src" / "backend").exists():
         return str(project_root)
+
+    # 4. Emplacements connus (build empaquété, les chemins __file__ ne marchent plus)
+    home = Path.home()
+    known_paths = [
+        home / "Developer" / "Synoptia-THERESE",
+        home / "Desktop" / "Dev Synoptia" / "THERESE V2",
+        home / "repos" / "Synoptia-THERESE",
+        home / "Documents" / "Synoptia-THERESE",
+    ]
+    for candidate in known_paths:
+        if candidate.exists() and (candidate / ".git").exists() and (candidate / "src" / "backend").exists():
+            return str(candidate)
 
     return None
 
@@ -387,11 +420,24 @@ async def get_config() -> AgentConfigResponse:
 
 
 @router.put("/config")
-async def update_config(config: AgentConfigUpdate) -> AgentConfigResponse:
+async def update_config(
+    config: AgentConfigUpdate,
+    session: AsyncSession = Depends(get_session),
+) -> AgentConfigResponse:
     """Met à jour la configuration des agents."""
-    import os
     if config.source_path:
-        os.environ["THERESE_SOURCE_PATH"] = config.source_path
+        # Persister en DB pour que le build empaquété retrouve le chemin
+        from app.models.entities import Preference
+        result = await session.execute(
+            select(Preference).where(Preference.key == "agent_source_path")
+        )
+        pref = result.scalar_one_or_none()
+        if pref:
+            pref.value = config.source_path
+        else:
+            session.add(Preference(key="agent_source_path", value=config.source_path))
+        await session.commit()
+
     source_path = _get_source_path()
     return AgentConfigResponse(source_path=source_path)
 
