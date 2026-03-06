@@ -93,6 +93,8 @@ hidden_imports = [
 datas = [
     (os.path.join(backend_dir, "alembic"), "alembic"),
     (os.path.join(backend_dir, "alembic.ini"), "."),
+    # v0.5 : configs agents IA (SOUL.md + agent.json)
+    (os.path.join(backend_dir, "app", "agents"), os.path.join("app", "agents")),
 ]
 
 # Collecter les data files des bibliothèques qui en ont besoin

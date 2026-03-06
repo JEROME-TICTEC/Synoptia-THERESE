@@ -23,6 +23,29 @@ from app.services.agents.tools import (
 logger = logging.getLogger(__name__)
 
 
+def _get_agent_model(agent_id: str) -> str | None:
+    """Lit le modèle choisi pour un agent depuis la DB."""
+    try:
+        import sqlite3
+
+        from app.config import settings
+
+        db_path = settings.db_path
+        if db_path and db_path.exists():
+            conn = sqlite3.connect(str(db_path))
+            cursor = conn.execute(
+                "SELECT value FROM preferences WHERE key = ?",
+                (f"agent_{agent_id}_model",),
+            )
+            row = cursor.fetchone()
+            conn.close()
+            if row and row[0]:
+                return row[0]
+    except Exception:
+        pass
+    return None
+
+
 class SwarmOrchestrator:
     """Orchestre les agents Thérèse et Zézette pour traiter une demande utilisateur."""
 
@@ -56,7 +79,8 @@ class SwarmOrchestrator:
 
         therese_config = get_agent_config("therese")
         therese_tools = AgentToolExecutor(self.source_path)
-        therese_runtime = AgentRuntime(therese_config, therese_tools, THERESE_TOOLS)
+        therese_model = _get_agent_model("therese")
+        therese_runtime = AgentRuntime(therese_config, therese_tools, THERESE_TOOLS, model_override=therese_model)
 
         # Thérèse traite le message
         spec_content = ""
@@ -173,7 +197,8 @@ class SwarmOrchestrator:
         # Lancer Zézette avec la spec
         zezette_config = get_agent_config("zezette")
         zezette_tools = AgentToolExecutor(self.source_path, git_service=self.git)
-        zezette_runtime = AgentRuntime(zezette_config, zezette_tools, ZEZETTE_TOOLS)
+        zezette_model = _get_agent_model("zezette")
+        zezette_runtime = AgentRuntime(zezette_config, zezette_tools, ZEZETTE_TOOLS, model_override=zezette_model)
 
         zezette_prompt = f"""Tu as reçu cette spécification de Thérèse :
 

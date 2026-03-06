@@ -69,25 +69,60 @@ def _resolve_soul_md(agent_id: str, builtin_dir: Path) -> str:
 
 
 def _resolve_agents_dir() -> Path:
-    """Trouve le dossier agents/ : builtin ou dans le source path."""
+    """Trouve le dossier agents/ : builtin, PyInstaller bundle, ou source path."""
+    import os
+    import sys
+
     # 1. Builtin (mode dev, __file__ pointe vers le vrai fichier)
     if (_BUILTIN_AGENTS_DIR / "therese" / "agent.json").exists():
         return _BUILTIN_AGENTS_DIR
 
-    # 2. Source path (mode build empaquété, le builtin est dans _MEI*)
-    try:
-        # Import circulaire évité par import local
-        from app.routers.agents import _get_source_path
+    # 2. PyInstaller bundle (_MEIPASS)
+    if hasattr(sys, "_MEIPASS"):
+        meipass_agents = Path(sys._MEIPASS) / "app" / "agents"
+        if (meipass_agents / "therese" / "agent.json").exists():
+            return meipass_agents
 
-        source = _get_source_path()
-        if source:
-            candidate = Path(source) / "src" / "backend" / "app" / "agents"
-            if (candidate / "therese" / "agent.json").exists():
-                return candidate
-    except Exception:
-        pass
+    # 3. Source path (env var ou DB, sans import circulaire)
+    source_path = os.environ.get("THERESE_SOURCE_PATH")
+    if not source_path:
+        # Lire directement en DB sans passer par le router
+        try:
+            import sqlite3
 
-    # 3. Fallback sur le builtin même s'il n'existe pas (lèvera FileNotFoundError plus tard)
+            from app.config import settings
+
+            db_path = settings.db_path
+            if db_path and Path(db_path).exists():
+                conn = sqlite3.connect(str(db_path))
+                cursor = conn.execute(
+                    "SELECT value FROM preferences WHERE key = 'agent_source_path'"
+                )
+                row = cursor.fetchone()
+                conn.close()
+                if row and row[0]:
+                    source_path = row[0]
+        except Exception:
+            pass
+
+    if not source_path:
+        # Emplacements connus
+        home = Path.home()
+        for candidate_root in [
+            home / "Developer" / "Synoptia-THERESE",
+            home / "Desktop" / "Dev Synoptia" / "THERESE V2",
+            home / "repos" / "Synoptia-THERESE",
+        ]:
+            if (candidate_root / "src" / "backend" / "app" / "agents" / "therese" / "agent.json").exists():
+                source_path = str(candidate_root)
+                break
+
+    if source_path:
+        candidate = Path(source_path) / "src" / "backend" / "app" / "agents"
+        if (candidate / "therese" / "agent.json").exists():
+            return candidate
+
+    # 4. Fallback (lèvera FileNotFoundError plus tard)
     return _BUILTIN_AGENTS_DIR
 
 

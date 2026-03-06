@@ -27,6 +27,40 @@ class AgentEvent:
     tool_result: str | None = None
 
 
+def _get_llm_for_model(model_id: str):
+    """Obtient un LLMService pour un model ID spécifique.
+
+    Détecte le provider à partir du model ID et crée le service approprié.
+    Fallback sur le service principal si le provider n'est pas configuré.
+    """
+    from app.services.llm import get_llm_service, get_llm_service_for_provider
+
+    # Mapping model ID → provider
+    provider_map = {
+        "claude-": "anthropic",
+        "gpt-": "openai",
+        "gemini-": "gemini",
+        "grok-": "grok",
+        "mistral-": "mistral",
+    }
+
+    # Modèles locaux Ollama (contiennent ":" comme qwen3:32b)
+    if ":" in model_id:
+        svc = get_llm_service_for_provider("ollama", model_override=model_id)
+        if svc:
+            return svc
+
+    for prefix, provider in provider_map.items():
+        if model_id.startswith(prefix):
+            svc = get_llm_service_for_provider(provider, model_override=model_id)
+            if svc:
+                return svc
+            break
+
+    # Fallback : service principal de l'utilisateur
+    return get_llm_service()
+
+
 class AgentRuntime:
     """Runtime d'exécution pour un agent."""
 
@@ -35,10 +69,12 @@ class AgentRuntime:
         config: AgentConfig,
         tool_executor: AgentToolExecutor,
         tools_schema: list[dict],
+        model_override: str | None = None,
     ) -> None:
         self.config = config
         self.tool_executor = tool_executor
         self.tools_schema = tools_schema
+        self.model_override = model_override
 
     async def _execute_tool(self, name: str, args: dict[str, Any]) -> str:
         """Exécute un outil et retourne le résultat."""
@@ -84,13 +120,15 @@ class AgentRuntime:
         Yields AgentEvent pour chaque étape (chunks de texte, appels d'outils, résultats).
         """
         from app.services.llm import Message as LLMMessage
-        from app.services.llm import get_llm_service
 
-        # Obtenir le service LLM
-        llm_service = get_llm_service()
+        # Obtenir le service LLM (avec le bon modèle pour cet agent)
+        model_id = self.model_override or self.config.default_model
+        llm_service = _get_llm_for_model(model_id)
         if not llm_service:
-            yield AgentEvent(type="error", content="Aucun service LLM configuré. Vérifiez votre clé API.")
+            yield AgentEvent(type="error", content="Aucun service LLM configuré. Vérifiez votre clé API dans les paramètres.")
             return
+
+        logger.info(f"Agent {self.config.id} utilise le modèle {model_id} (provider: {llm_service.config.provider.value})")
 
         # Construire le system prompt
         system_prompt = self.config.system_prompt
@@ -121,19 +159,21 @@ class AgentRuntime:
                     async for event in llm_service.stream_response_with_tools(
                         context, tools=self.tools_schema
                     ):
-                        if hasattr(event, "type"):
-                            if event.type == "text":
-                                full_content += event.content
-                                yield AgentEvent(type="chunk", content=event.content)
-                            elif event.type == "tool_use":
-                                tool_calls_raw.append({
-                                    "id": getattr(event, "tool_use_id", ""),
-                                    "name": event.tool_name,
-                                    "arguments": event.tool_input if hasattr(event, "tool_input") else {},
-                                })
-                        elif isinstance(event, str):
-                            full_content += event
-                            yield AgentEvent(type="chunk", content=event)
+                        # StreamEvent a : type ("text"|"tool_call"|"done"|"error"),
+                        # content, tool_call (ToolCall dataclass)
+                        if event.type == "text" and event.content:
+                            full_content += event.content
+                            yield AgentEvent(type="chunk", content=event.content)
+                        elif event.type == "tool_call" and event.tool_call:
+                            tc = event.tool_call
+                            tool_calls_raw.append({
+                                "id": tc.id,
+                                "name": tc.name,
+                                "arguments": tc.arguments,
+                            })
+                        elif event.type == "error":
+                            yield AgentEvent(type="error", content=event.content or "Erreur LLM")
+                            return
                 else:
                     async for chunk in llm_service.stream_response(context):
                         full_content += chunk
