@@ -78,14 +78,24 @@ class DiffResponse(BaseModel):
     total_deletions: int = 0
 
 
+class AgentModelInfo(BaseModel):
+    """Informations sur un modèle disponible."""
+
+    id: str
+    name: str
+    provider: str
+    recommended: bool = False
+
+
 class AgentConfigResponse(BaseModel):
     """Configuration des agents."""
 
     therese_enabled: bool = True
     zezette_enabled: bool = True
-    model: str = "claude-sonnet-4-6"
+    therese_model: str = "claude-sonnet-4-6"
+    zezette_model: str = "claude-sonnet-4-6"
     source_path: str | None = None
-    github_token: str | None = None  # Masqué dans la réponse
+    available_models: list[AgentModelInfo] = []
 
 
 class AgentConfigUpdate(BaseModel):
@@ -93,9 +103,9 @@ class AgentConfigUpdate(BaseModel):
 
     therese_enabled: bool | None = None
     zezette_enabled: bool | None = None
-    model: str | None = None
+    therese_model: str | None = None
+    zezette_model: str | None = None
     source_path: str | None = None
-    github_token: str | None = None
 
 
 class AgentStatusResponse(BaseModel):

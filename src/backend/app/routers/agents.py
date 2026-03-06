@@ -413,10 +413,36 @@ async def rollback_task(
 
 
 @router.get("/config")
-async def get_config() -> AgentConfigResponse:
-    """Récupère la configuration des agents."""
+async def get_config(
+    session: AsyncSession = Depends(get_session),
+) -> AgentConfigResponse:
+    """Récupère la configuration des agents avec les modèles disponibles."""
+    from app.models.entities import Preference
+    from app.models.schemas_agents import AgentModelInfo
+    from app.services.agents.config import AVAILABLE_MODELS
+
     source_path = _get_source_path()
-    return AgentConfigResponse(source_path=source_path)
+
+    # Lire les modèles choisis en DB
+    therese_model = "claude-sonnet-4-6"
+    zezette_model = "claude-sonnet-4-6"
+    for key in ("agent_therese_model", "agent_zezette_model"):
+        result = await session.execute(
+            select(Preference).where(Preference.key == key)
+        )
+        pref = result.scalar_one_or_none()
+        if pref and pref.value:
+            if key == "agent_therese_model":
+                therese_model = pref.value
+            else:
+                zezette_model = pref.value
+
+    return AgentConfigResponse(
+        source_path=source_path,
+        therese_model=therese_model,
+        zezette_model=zezette_model,
+        available_models=[AgentModelInfo(**m) for m in AVAILABLE_MODELS],
+    )
 
 
 @router.put("/config")
@@ -425,21 +451,31 @@ async def update_config(
     session: AsyncSession = Depends(get_session),
 ) -> AgentConfigResponse:
     """Met à jour la configuration des agents."""
+    from app.models.entities import Preference
+
+    # Persister chaque paramètre en DB
+    updates = {}
     if config.source_path:
-        # Persister en DB pour que le build empaquété retrouve le chemin
-        from app.models.entities import Preference
+        updates["agent_source_path"] = config.source_path
+    if config.therese_model:
+        updates["agent_therese_model"] = config.therese_model
+    if config.zezette_model:
+        updates["agent_zezette_model"] = config.zezette_model
+
+    for key, value in updates.items():
         result = await session.execute(
-            select(Preference).where(Preference.key == "agent_source_path")
+            select(Preference).where(Preference.key == key)
         )
         pref = result.scalar_one_or_none()
         if pref:
-            pref.value = config.source_path
+            pref.value = value
         else:
-            session.add(Preference(key="agent_source_path", value=config.source_path))
+            session.add(Preference(key=key, value=value))
+
+    if updates:
         await session.commit()
 
-    source_path = _get_source_path()
-    return AgentConfigResponse(source_path=source_path)
+    return await get_config(session)
 
 
 # ============================================================

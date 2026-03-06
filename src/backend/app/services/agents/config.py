@@ -15,6 +15,26 @@ logger = logging.getLogger(__name__)
 # Chemin des templates livrés avec l'app
 _BUILTIN_AGENTS_DIR = Path(__file__).parent.parent.parent / "agents"
 
+# Modèles disponibles pour les agents (flagship de chaque provider)
+AVAILABLE_MODELS = [
+    # Anthropic
+    {"id": "claude-sonnet-4-6", "name": "Claude Sonnet 4.6", "provider": "anthropic", "recommended": True},
+    {"id": "claude-opus-4-6", "name": "Claude Opus 4.6", "provider": "anthropic"},
+    # OpenAI
+    {"id": "gpt-5.4", "name": "GPT-5.4", "provider": "openai"},
+    {"id": "gpt-5.4-pro", "name": "GPT-5.4 Pro", "provider": "openai"},
+    # Google
+    {"id": "gemini-3.1-pro", "name": "Gemini 3.1 Pro", "provider": "gemini"},
+    {"id": "gemini-3.1-flash", "name": "Gemini 3.1 Flash", "provider": "gemini"},
+    # xAI
+    {"id": "grok-4-1-fast-reasoning", "name": "Grok 4.1 Fast", "provider": "grok"},
+    # Mistral
+    {"id": "mistral-large-latest", "name": "Mistral Large 3", "provider": "mistral"},
+    # Local (Ollama)
+    {"id": "qwen3:32b", "name": "Qwen 3 32B (local)", "provider": "ollama"},
+    {"id": "mistral-nemo:12b", "name": "Mistral Nemo 12B (local)", "provider": "ollama"},
+]
+
 
 @dataclass
 class AgentConfig:

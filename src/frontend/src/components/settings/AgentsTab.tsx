@@ -2,19 +2,29 @@
  * THÉRÈSE v2 - Agents Settings Tab
  *
  * Configuration des agents IA embarqués (Atelier).
- * BYOK, modèle, chemin source, statut.
+ * Choix du modèle par agent, chemin source, statut.
  */
 
 import { useState, useEffect } from 'react';
-import { Zap, RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Zap, RefreshCw, CheckCircle, XCircle, AlertCircle, Headphones, Wrench } from 'lucide-react';
 import { getAgentStatus, getAgentConfig, updateAgentConfig } from '../../services/api/agents';
 import type { AgentStatusResponse, AgentConfigResponse } from '../../services/api/agents';
 import { useAtelierStore } from '../../stores/atelierStore';
+
+interface ModelInfo {
+  id: string;
+  name: string;
+  provider: string;
+  recommended?: boolean;
+}
 
 export function AgentsTab() {
   const [status, setStatus] = useState<AgentStatusResponse | null>(null);
   const [, setConfig] = useState<AgentConfigResponse | null>(null);
   const [sourcePath, setSourcePathInput] = useState('');
+  const [thereseModel, setThereseModel] = useState('claude-sonnet-4-6');
+  const [zezetteModel, setZezetteModel] = useState('claude-sonnet-4-6');
+  const [models, setModels] = useState<ModelInfo[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,20 +39,25 @@ export function AgentsTab() {
       setStatus(s);
       setConfig(c);
       if (c?.source_path) setSourcePathInput(c.source_path);
+      if (c?.therese_model) setThereseModel(c.therese_model);
+      if (c?.zezette_model) setZezetteModel(c.zezette_model);
+      if (c?.available_models) setModels(c.available_models);
       setLoading(false);
     });
   }, []);
 
-  const handleSavePath = async () => {
-    if (!sourcePath.trim()) return;
+  const handleSave = async () => {
     setSaving(true);
     try {
-      const updated = await updateAgentConfig({ source_path: sourcePath.trim() });
+      const updated = await updateAgentConfig({
+        source_path: sourcePath.trim() || undefined,
+        therese_model: thereseModel,
+        zezette_model: zezetteModel,
+      });
       setConfig(updated);
-      setSourcePath(sourcePath.trim());
+      if (sourcePath.trim()) setSourcePath(sourcePath.trim());
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-      // Refresh status
       const s = await getAgentStatus().catch(() => null);
       setStatus(s);
     } catch {
@@ -66,6 +81,16 @@ export function AgentsTab() {
       </div>
     );
   }
+
+  // Grouper les modèles par provider
+  const providerLabels: Record<string, string> = {
+    anthropic: 'Anthropic',
+    openai: 'OpenAI',
+    gemini: 'Google',
+    grok: 'xAI',
+    mistral: 'Mistral',
+    ollama: 'Local (Ollama)',
+  };
 
   return (
     <div className="space-y-6">
@@ -102,12 +127,65 @@ export function AgentsTab() {
               <span className="font-mono text-xs">{status.current_branch}</span>
             </div>
           )}
-          {status?.active_tasks !== undefined && status.active_tasks > 0 && (
-            <div className="flex items-center justify-between text-text-muted">
-              <span>Tâches actives</span>
-              <span className="text-amber-400">{status.active_tasks}</span>
-            </div>
-          )}
+        </div>
+      </div>
+
+      {/* Choix du modèle par agent */}
+      <div className="rounded-lg border border-border/50 bg-surface-elevated/30 p-4">
+        <h4 className="text-sm font-medium text-text mb-3">Modèle IA par agent</h4>
+
+        {/* Thérèse */}
+        <div className="mb-3">
+          <label className="flex items-center gap-2 text-xs font-medium text-purple-400 mb-1.5">
+            <Headphones size={12} />
+            Thérèse (PM/Guide)
+          </label>
+          <select
+            value={thereseModel}
+            onChange={(e) => setThereseModel(e.target.value)}
+            className="w-full rounded-lg border border-border/50 bg-bg px-3 py-2 text-sm text-text outline-none focus:border-purple-500/50"
+          >
+            {Object.entries(providerLabels).map(([provider, label]) => {
+              const providerModels = models.filter((m) => m.provider === provider);
+              if (providerModels.length === 0) return null;
+              return (
+                <optgroup key={provider} label={label}>
+                  {providerModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}{m.recommended ? ' (recommandé)' : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
+          </select>
+        </div>
+
+        {/* Zézette */}
+        <div>
+          <label className="flex items-center gap-2 text-xs font-medium text-amber-400 mb-1.5">
+            <Wrench size={12} />
+            Zézette (Dev)
+          </label>
+          <select
+            value={zezetteModel}
+            onChange={(e) => setZezetteModel(e.target.value)}
+            className="w-full rounded-lg border border-border/50 bg-bg px-3 py-2 text-sm text-text outline-none focus:border-purple-500/50"
+          >
+            {Object.entries(providerLabels).map(([provider, label]) => {
+              const providerModels = models.filter((m) => m.provider === provider);
+              if (providerModels.length === 0) return null;
+              return (
+                <optgroup key={provider} label={label}>
+                  {providerModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}{m.recommended ? ' (recommandé)' : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
+          </select>
         </div>
       </div>
 
@@ -117,48 +195,25 @@ export function AgentsTab() {
           Chemin du code source
         </h4>
         <p className="text-xs text-text-muted mb-3">
-          Chemin local vers votre clone/fork du repo Thérèse. Les agents travailleront sur ce dossier.
+          Chemin local vers votre clone/fork du repo Thérèse.
         </p>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={sourcePath}
-            onChange={(e) => setSourcePathInput(e.target.value)}
-            placeholder="/chemin/vers/Synoptia-THERESE"
-            className="flex-1 rounded-lg border border-border/50 bg-bg px-3 py-2 text-sm text-text placeholder-text-muted/50 outline-none focus:border-purple-500/50"
-          />
-          <button
-            onClick={handleSavePath}
-            disabled={saving || !sourcePath.trim()}
-            className="rounded-lg bg-purple-500/20 px-4 py-2 text-sm font-medium text-purple-400 transition hover:bg-purple-500/30 disabled:opacity-50"
-          >
-            {saving ? '...' : saved ? 'OK' : 'Sauver'}
-          </button>
-        </div>
+        <input
+          type="text"
+          value={sourcePath}
+          onChange={(e) => setSourcePathInput(e.target.value)}
+          placeholder="/chemin/vers/Synoptia-THERESE"
+          className="w-full rounded-lg border border-border/50 bg-bg px-3 py-2 text-sm text-text placeholder-text-muted/50 outline-none focus:border-purple-500/50"
+        />
       </div>
 
-      {/* Info */}
-      <div className="rounded-lg border border-border/50 bg-surface-elevated/30 p-4">
-        <h4 className="text-sm font-medium text-text mb-2">Comment ça marche</h4>
-        <ul className="space-y-1.5 text-xs text-text-muted">
-          <li className="flex items-start gap-2">
-            <span className="text-purple-400 mt-0.5">1.</span>
-            <span>Forkez le repo <code className="text-text">Synoptia-THERESE</code> sur GitHub</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-purple-400 mt-0.5">2.</span>
-            <span>Clonez votre fork localement</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-purple-400 mt-0.5">3.</span>
-            <span>Indiquez le chemin ci-dessus</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-purple-400 mt-0.5">4.</span>
-            <span>Ouvrez l'Atelier (bouton <Zap size={10} className="inline text-purple-400" /> ou <kbd className="px-1 py-0.5 rounded bg-bg border border-border/50 text-text">Cmd+Shift+A</kbd>)</span>
-          </li>
-        </ul>
-      </div>
+      {/* Bouton sauver global */}
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full rounded-lg bg-purple-500/20 px-4 py-2.5 text-sm font-medium text-purple-400 transition hover:bg-purple-500/30 disabled:opacity-50"
+      >
+        {saving ? 'Sauvegarde...' : saved ? 'Sauvegardé' : 'Sauvegarder la configuration'}
+      </button>
     </div>
   );
 }

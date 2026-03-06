@@ -67,11 +67,20 @@ export interface DiffResponse {
   total_deletions: number;
 }
 
+export interface AgentModelInfo {
+  id: string;
+  name: string;
+  provider: string;
+  recommended?: boolean;
+}
+
 export interface AgentConfigResponse {
   therese_enabled: boolean;
   zezette_enabled: boolean;
-  model: string;
+  therese_model: string;
+  zezette_model: string;
   source_path?: string;
+  available_models: AgentModelInfo[];
 }
 
 export interface AgentStatusResponse {
