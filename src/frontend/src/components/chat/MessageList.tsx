@@ -107,15 +107,20 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
     <div ref={scrollContainerRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 py-6" style={{ overflowAnchor: 'none' }}>
       <div className="max-w-3xl mx-auto space-y-4">
         <AnimatePresence initial={false}>
-          {displayMessages.map((message, index) => (
+          {displayMessages.map((message, index) => {
+            // Pas d'animation d'entrée pour les messages en streaming (évite les saccades)
+            const isLastAndStreaming = message.isStreaming || (
+              index === displayMessages.length - 1 && isStreaming
+            );
+            return (
             <motion.div
               key={message.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={isLastAndStreaming ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{
-                duration: 0.2,
-                delay: index * 0.03,
+                duration: isLastAndStreaming ? 0 : 0.2,
+                delay: isLastAndStreaming ? 0 : Math.min(index * 0.03, 0.15),
               }}
               style={{
                 contentVisibility: message.isStreaming ? 'visible' : 'auto',
@@ -156,7 +161,8 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
                 )
               )}
             </motion.div>
-          ))}
+            );
+          })}
         </AnimatePresence>
 
         {isStreaming && (

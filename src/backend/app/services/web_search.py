@@ -372,3 +372,67 @@ async def execute_web_search(arguments: dict[str, Any]) -> str:
     service = get_web_search_service()
     response = await service.search(query, max_results=max_results)
     return service.format_results_for_llm(response)
+
+
+# Définition de l'outil browser pour le LLM (tool calling)
+BROWSER_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "browser_navigate",
+        "description": "Navigue sur une page web, extrait le contenu textuel et peut interagir avec la page. Utilise cette fonction quand l'utilisateur demande d'aller sur un site web spécifique, d'extraire des données d'une page, de remplir un formulaire, ou de chercher des informations sur un site précis.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "L'URL complète de la page web à visiter (ex: https://example.com)",
+                },
+                "action": {
+                    "type": "string",
+                    "enum": ["navigate", "extract", "click", "fill", "links", "screenshot"],
+                    "description": "L'action à effectuer sur la page",
+                    "default": "navigate",
+                },
+                "selector": {
+                    "type": "string",
+                    "description": "Sélecteur CSS pour cibler un élément (optionnel, pour click/fill/extract)",
+                },
+                "value": {
+                    "type": "string",
+                    "description": "Valeur à saisir dans un champ (pour l'action fill)",
+                },
+            },
+            "required": ["url"],
+        },
+    },
+}
+
+
+async def execute_browser_action(arguments: dict[str, Any]) -> str:
+    """Exécute une action browser via le browser agent."""
+    from app.services.browser_agent import get_browser_agent
+
+    agent = get_browser_agent()
+    url = arguments.get("url", "")
+    action = arguments.get("action", "navigate")
+    selector = arguments.get("selector")
+    value = arguments.get("value")
+
+    # Pour navigate, on doit d'abord naviguer
+    if action == "navigate" or not agent._page:
+        result = await agent.navigate(url)
+        if not result.success:
+            return f"Erreur navigation : {result.error}"
+        if action == "navigate":
+            return f"Page chargée : {result.title}\n\nContenu :\n{result.content}"
+
+    # Ensuite exécuter l'action demandée
+    result = await agent.execute_action(action, {
+        "selector": selector,
+        "value": value,
+    })
+
+    if not result.success:
+        return f"Erreur {action} : {result.error}"
+
+    return result.content or f"Action {action} exécutée avec succès"

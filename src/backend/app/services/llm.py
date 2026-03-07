@@ -19,6 +19,7 @@ from app.services.context import ContextWindow
 # Re-export types for backward compatibility
 from app.services.providers import (
     AnthropicProvider,
+    DeepSeekProvider,
     GeminiProvider,
     GrokProvider,
     LLMConfig,
@@ -28,6 +29,7 @@ from app.services.providers import (
     OllamaProvider,
     OpenAIProvider,
     OpenRouterProvider,
+    PerplexityProvider,
     StreamEvent,
     ToolCall,
     ToolResult,
@@ -308,6 +310,8 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
             "mistral": (LLMProvider.MISTRAL, "mistral-large-latest", 256000),
             "grok": (LLMProvider.GROK, "grok-4", 131072),
             "openrouter": (LLMProvider.OPENROUTER, "anthropic/claude-sonnet-4-6", 200000),
+            "perplexity": (LLMProvider.PERPLEXITY, "sonar-pro", 200000),
+            "deepseek": (LLMProvider.DEEPSEEK, "deepseek-chat", 128000),
             "ollama": (LLMProvider.OLLAMA, "mistral-nemo", 32000),
         }
 
@@ -329,6 +333,8 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
                     "mistral": "MISTRAL_API_KEY",
                     "grok": "XAI_API_KEY",
                     "openrouter": "OPENROUTER_API_KEY",
+                    "perplexity": "PERPLEXITY_API_KEY",
+                    "deepseek": "DEEPSEEK_API_KEY",
                 }
                 api_key = os.getenv(env_map.get(selected_provider, ""))
 
@@ -379,6 +385,8 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
                 LLMProvider.MISTRAL: MistralProvider,
                 LLMProvider.GROK: GrokProvider,
                 LLMProvider.OPENROUTER: OpenRouterProvider,
+                LLMProvider.PERPLEXITY: PerplexityProvider,
+                LLMProvider.DEEPSEEK: DeepSeekProvider,
                 LLMProvider.OLLAMA: OllamaProvider,
             }
             provider_class = provider_map.get(self.config.provider)
@@ -552,6 +560,8 @@ def get_llm_service_for_provider(provider_name: str, model_override: str | None 
         "mistral": (LLMProvider.MISTRAL, "mistral-large-latest", "MISTRAL_API_KEY", 256000),
         "grok": (LLMProvider.GROK, "grok-4", "XAI_API_KEY", 131072),
         "openrouter": (LLMProvider.OPENROUTER, "anthropic/claude-sonnet-4-6", "OPENROUTER_API_KEY", 200000),
+        "perplexity": (LLMProvider.PERPLEXITY, "sonar-pro", "PERPLEXITY_API_KEY", 200000),
+        "deepseek": (LLMProvider.DEEPSEEK, "deepseek-chat", "DEEPSEEK_API_KEY", 128000),
         "ollama": (LLMProvider.OLLAMA, "mistral-nemo", None, 32000),
     }
 

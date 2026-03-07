@@ -32,6 +32,7 @@ export {
 export {
   sendMessage,
   streamMessage,
+  streamDeepResearch,
   listConversations,
   getConversation,
   createConversation,
@@ -46,6 +47,7 @@ export {
   type StreamChunk,
   type ConversationResponse,
   type MessageResponse,
+  type DeepResearchRequest,
 } from './chat';
 
 // Memory - Contacts and projects
@@ -447,6 +449,17 @@ export {
   type AgentConfigResponse,
   type AgentStatusResponse,
 } from './agents';
+
+// Browser - Navigation web et automation
+export {
+  browserNavigate,
+  browserAction,
+  browserStatus,
+  browserClose,
+  type BrowserActionRequest,
+  type BrowserActionResponse,
+  type BrowserStatus,
+} from './browser';
 
 // RGPD - Conformité données personnelles
 export {

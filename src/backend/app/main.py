@@ -33,6 +33,7 @@ from app.models.database import close_db, init_db
 from app.routers import (
     agents_router,  # v0.5 - Agents IA Embarqués (Atelier)
     board_router,
+    browser_router,  # v0.6 - Browser Automation (Manus-inspired)
     calc_router,
     calendar_router,  # Phase 2 - ACTIVATED
     chat_router,
@@ -209,6 +210,12 @@ async def lifespan(app: FastAPI):
     # Close global HTTP client pool (Sprint 2 - PERF-2.6)
     from app.services.http_client import close_http_client
     await close_http_client()
+
+    # Fermer le browser agent si actif (v0.6)
+    from app.services.browser_agent import get_browser_agent
+    browser = get_browser_agent()
+    if browser.is_active:
+        await browser.stop()
 
     mcp_service = get_mcp_service()
     await mcp_service.shutdown()
@@ -503,6 +510,9 @@ app.include_router(tools_router, prefix="/api/tools", tags=["Tools"])
 
 # v0.5 - Agents IA Embarqués (Atelier)
 app.include_router(agents_router, prefix="/api/agents", tags=["Agents"])
+
+# v0.6 - Browser Automation (Manus-inspired)
+app.include_router(browser_router, prefix="/api/browser", tags=["Browser"])
 
 
 # Health endpoints

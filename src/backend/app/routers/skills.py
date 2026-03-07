@@ -254,6 +254,7 @@ async def download_file(file_id: str):
                 ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                 ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".html": "text/html",
                 ".pdf": "application/pdf",
                 ".md": "text/markdown",
             }

@@ -145,7 +145,7 @@ export const MessageBubble = memo(function MessageBubble({
             : 'bg-surface-elevated border border-border hover:border-accent-cyan/20 hover:shadow-[0_0_20px_rgba(34,211,238,0.05)]'
         )}
         style={{
-          contain: 'layout style paint',
+          contain: message.isStreaming ? 'style paint' : 'layout style paint',
           willChange: message.isStreaming ? 'contents' : 'auto',
           // 56px = py-3 (24px) + 1 ligne leading-relaxed (~32px) : évite un saut initial
           minHeight: message.isStreaming ? '56px' : 'auto',

@@ -15,12 +15,14 @@ from .base import (
     ToolCall,
     ToolResult,
 )
+from .deepseek import DeepSeekProvider
 from .gemini import GeminiProvider
 from .grok import GrokProvider
 from .mistral import MistralProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
 from .openrouter import OpenRouterProvider
+from .perplexity import PerplexityProvider
 
 __all__ = [
     # Enums and types
@@ -36,6 +38,8 @@ __all__ = [
     "AnthropicProvider",
     "OpenAIProvider",
     "OpenRouterProvider",
+    "PerplexityProvider",
+    "DeepSeekProvider",
     "GeminiProvider",
     "MistralProvider",
     "GrokProvider",

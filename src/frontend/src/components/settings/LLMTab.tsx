@@ -101,6 +101,32 @@ export const PROVIDERS: ProviderConfig[] = [
     ],
   },
   {
+    id: 'perplexity',
+    name: 'Perplexity',
+    description: 'Recherche augmentée par IA (Sonar)',
+    keyPrefix: 'pplx-',
+    keyPlaceholder: 'pplx-...',
+    consoleUrl: 'https://www.perplexity.ai/settings/api',
+    models: [
+      { id: 'sonar-pro', name: 'Sonar Pro', badge: 'Recherche' },
+      { id: 'sonar', name: 'Sonar', badge: 'Rapide' },
+      { id: 'sonar-reasoning-pro', name: 'Sonar Reasoning Pro', badge: 'Raisonnement' },
+      { id: 'sonar-reasoning', name: 'Sonar Reasoning' },
+    ],
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    description: 'DeepSeek V3 et R1 (raisonnement)',
+    keyPrefix: 'sk-',
+    keyPlaceholder: 'sk-...',
+    consoleUrl: 'https://platform.deepseek.com/api_keys',
+    models: [
+      { id: 'deepseek-chat', name: 'DeepSeek Chat', badge: 'V3' },
+      { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', badge: 'R1' },
+    ],
+  },
+  {
     id: 'ollama',
     name: 'Ollama (Local)',
     description: '100% local - Aucune clé API requise',

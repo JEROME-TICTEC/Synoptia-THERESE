@@ -19,6 +19,7 @@ from app.models.schemas import (
     LLMConfigResponse,
     LLMConfigUpdate,
     OllamaModelInfo,
+    OllamaModelRecommendation,
     OllamaStatusResponse,
     UserProfileResponse,
     UserProfileUpdate,
@@ -1032,6 +1033,29 @@ async def set_llm_config(
 # ============================================================
 
 
+def _recommend_ollama_models(model_names: list[str]) -> OllamaModelRecommendation:
+    """Recommande le meilleur modèle Ollama installé selon la tâche."""
+    # Priorité par catégorie (du meilleur au moins bon)
+    general_prio = ["qwen3.5", "qwen3", "mistral-large", "gemma3:27b", "llama4", "mistral-nemo", "gemma3:12b", "mistral", "llama3", "gemma3", "phi3"]
+    coding_prio = ["qwen3-coder", "codestral", "deepseek-coder", "starcoder", "qwen3.5", "mistral-large", "mistral-nemo"]
+    writing_prio = ["qwen3.5", "mistral-large", "gemma3:27b", "llama4", "mistral-nemo", "gemma3:12b", "mistral"]
+    fast_prio = ["phi3:mini", "gemma3:1b", "gemma3:4b", "qwen3:4b", "phi3", "mistral-nemo", "gemma3"]
+
+    def find_best(priorities: list[str]) -> str | None:
+        for prio in priorities:
+            for name in model_names:
+                if prio in name:
+                    return name
+        return model_names[0] if model_names else None
+
+    return OllamaModelRecommendation(
+        general=find_best(general_prio),
+        coding=find_best(coding_prio),
+        writing=find_best(writing_prio),
+        fast=find_best(fast_prio),
+    )
+
+
 @router.get("/ollama/status", response_model=OllamaStatusResponse)
 async def get_ollama_status():
     """Check Ollama availability and list installed models."""
@@ -1059,10 +1083,15 @@ async def get_ollama_status():
             for m in data.get("models", [])
         ]
 
+        # Recommandations de modèles selon la tâche
+        model_names = [m.name.lower() for m in models]
+        recommendations = _recommend_ollama_models(model_names)
+
         return OllamaStatusResponse(
             available=True,
             base_url=settings.ollama_base_url,
             models=models,
+            recommendations=recommendations,
         )
 
     except httpx.ConnectError:
