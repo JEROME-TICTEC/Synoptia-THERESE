@@ -20,6 +20,7 @@ class FileFormat(str, Enum):
     DOCX = "docx"
     PPTX = "pptx"
     XLSX = "xlsx"
+    HTML = "html"
     PDF = "pdf"
     MD = "md"
 

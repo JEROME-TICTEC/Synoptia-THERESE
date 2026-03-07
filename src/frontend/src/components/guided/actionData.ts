@@ -6,13 +6,14 @@ import {
   FileText,
   FileSpreadsheet,
   Presentation,
+  Globe,
   type LucideIcon,
 } from 'lucide-react';
 
 /**
  * Format de fichier genere par un skill
  */
-export type FileFormat = 'docx' | 'pptx' | 'xlsx' | 'pdf';
+export type FileFormat = 'docx' | 'pptx' | 'xlsx' | 'html' | 'pdf';
 
 /**
  * Provider de generation d'images
@@ -122,6 +123,17 @@ export const GUIDED_ACTIONS: GuidedAction[] = [
           skillId: 'xlsx-pro',
           format: 'xlsx',
           icon: FileSpreadsheet,
+        },
+      },
+      {
+        id: 'webpage',
+        label: 'Page Web',
+        prompt: 'Cree une page web pour [sujet/entreprise]. Type : [landing page, portfolio, mini-site]. Sections souhaitees : [hero, services, tarifs, contact].',
+        skillId: 'html-web',
+        generatesFile: {
+          skillId: 'html-web',
+          format: 'html',
+          icon: Globe,
         },
       },
       {

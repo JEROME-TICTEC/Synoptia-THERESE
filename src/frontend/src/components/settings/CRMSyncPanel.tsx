@@ -376,7 +376,7 @@ export function CRMSyncPanel({ onSyncComplete }: CRMSyncPanelProps) {
           )}
           <div className="space-y-2">
             <div>
-              <label className="text-xs text-text-muted">Client ID</label>
+              <label className="text-xs text-text-muted">ID client</label>
               <input
                 type="text"
                 value={clientIdInput}
@@ -386,7 +386,7 @@ export function CRMSyncPanel({ onSyncComplete }: CRMSyncPanelProps) {
               />
             </div>
             <div>
-              <label className="text-xs text-text-muted">Client Secret</label>
+              <label className="text-xs text-text-muted">Code secret du client</label>
               <input
                 type="password"
                 value={clientSecretInput}

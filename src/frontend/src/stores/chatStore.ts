@@ -65,6 +65,9 @@ interface ChatStore {
   setQueuedPrompt: (prompt: string | null) => void;
   clearCurrentConversation: () => void;
 
+  // Rename
+  renameConversation: (id: string, title: string) => void;
+
   // Sync actions
   setConversations: (conversations: Conversation[]) => void;
   setConversationMessages: (conversationId: string, messages: Message[]) => void;
@@ -260,6 +263,15 @@ export const useChatStore = create<ChatStore>()(
             c.id === state.currentConversationId
               ? { ...c, messages: [], updatedAt: new Date() }
               : c
+          ),
+        }));
+      },
+
+      // Renommer une conversation (local uniquement, pas d'API backend)
+      renameConversation: (id, title) => {
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === id ? { ...c, title, updatedAt: new Date() } : c
           ),
         }));
       },

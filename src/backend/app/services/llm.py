@@ -19,6 +19,7 @@ from app.services.context import ContextWindow
 # Re-export types for backward compatibility
 from app.services.providers import (
     AnthropicProvider,
+    DeepSeekProvider,
     GeminiProvider,
     GrokProvider,
     LLMConfig,
@@ -28,6 +29,7 @@ from app.services.providers import (
     OllamaProvider,
     OpenAIProvider,
     OpenRouterProvider,
+    PerplexityProvider,
     StreamEvent,
     ToolCall,
     ToolResult,
@@ -260,17 +262,21 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
         current_date_example = now.strftime("%-d %B %Y")
 
         if not profile or not profile.name:
-            return self.DEFAULT_SYSTEM_PROMPT_NO_PROFILE.format(
-                current_date=current_date,
-                therese_md=therese_md_section,
-            )
+            # Substitution manuelle (pas .format()) pour éviter ValueError
+            # si therese_md contient des accolades (JSON, code, etc.)
+            prompt = self.DEFAULT_SYSTEM_PROMPT_NO_PROFILE
+            prompt = prompt.replace("{current_date}", current_date)
+            prompt = prompt.replace("{therese_md}", therese_md_section)
+            return prompt
 
-        return self.DEFAULT_SYSTEM_PROMPT_TEMPLATE.format(
-            user_identity=profile.format_for_llm(),
-            current_date=current_date,
-            current_date_example=current_date_example,
-            therese_md=therese_md_section,
-        )
+        # Substitution manuelle pour éviter ValueError sur les accolades
+        # dans user_identity ou therese_md (BUG OpenRouter signalé par Dr_logic-3D)
+        prompt = self.DEFAULT_SYSTEM_PROMPT_TEMPLATE
+        prompt = prompt.replace("{user_identity}", profile.format_for_llm())
+        prompt = prompt.replace("{current_date}", current_date)
+        prompt = prompt.replace("{current_date_example}", current_date_example)
+        prompt = prompt.replace("{therese_md}", therese_md_section)
+        return prompt
 
     def _default_config(self) -> LLMConfig:
         """Get default configuration from user preferences."""
@@ -308,6 +314,8 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
             "mistral": (LLMProvider.MISTRAL, "mistral-large-latest", 256000),
             "grok": (LLMProvider.GROK, "grok-4", 131072),
             "openrouter": (LLMProvider.OPENROUTER, "anthropic/claude-sonnet-4-6", 200000),
+            "perplexity": (LLMProvider.PERPLEXITY, "sonar-pro", 200000),
+            "deepseek": (LLMProvider.DEEPSEEK, "deepseek-chat", 128000),
             "ollama": (LLMProvider.OLLAMA, "mistral-nemo", 32000),
         }
 
@@ -329,6 +337,8 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
                     "mistral": "MISTRAL_API_KEY",
                     "grok": "XAI_API_KEY",
                     "openrouter": "OPENROUTER_API_KEY",
+                    "perplexity": "PERPLEXITY_API_KEY",
+                    "deepseek": "DEEPSEEK_API_KEY",
                 }
                 api_key = os.getenv(env_map.get(selected_provider, ""))
 
@@ -379,6 +389,8 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
                 LLMProvider.MISTRAL: MistralProvider,
                 LLMProvider.GROK: GrokProvider,
                 LLMProvider.OPENROUTER: OpenRouterProvider,
+                LLMProvider.PERPLEXITY: PerplexityProvider,
+                LLMProvider.DEEPSEEK: DeepSeekProvider,
                 LLMProvider.OLLAMA: OllamaProvider,
             }
             provider_class = provider_map.get(self.config.provider)
@@ -552,6 +564,8 @@ def get_llm_service_for_provider(provider_name: str, model_override: str | None 
         "mistral": (LLMProvider.MISTRAL, "mistral-large-latest", "MISTRAL_API_KEY", 256000),
         "grok": (LLMProvider.GROK, "grok-4", "XAI_API_KEY", 131072),
         "openrouter": (LLMProvider.OPENROUTER, "anthropic/claude-sonnet-4-6", "OPENROUTER_API_KEY", 200000),
+        "perplexity": (LLMProvider.PERPLEXITY, "sonar-pro", "PERPLEXITY_API_KEY", 200000),
+        "deepseek": (LLMProvider.DEEPSEEK, "deepseek-chat", "DEEPSEEK_API_KEY", 128000),
         "ollama": (LLMProvider.OLLAMA, "mistral-nemo", None, 32000),
     }
 

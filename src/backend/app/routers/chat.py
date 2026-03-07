@@ -43,9 +43,15 @@ from app.services.path_security import validate_file_path
 from app.services.performance import get_performance_monitor, get_search_index
 from app.services.qdrant import get_qdrant_service
 from app.services.token_tracker import detect_uncertainty, get_token_tracker
-from app.services.web_search import WEB_SEARCH_TOOL, execute_web_search
+from app.services.web_search import (
+    BROWSER_TOOL,
+    WEB_SEARCH_TOOL,
+    execute_browser_action,
+    execute_web_search,
+)
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -396,6 +402,114 @@ async def cancel_generation(conversation_id: str):
     }
 
 
+class DeepResearchRequest(BaseModel):
+    """Requête de recherche approfondie."""
+
+    question: str
+    conversation_id: str | None = None
+    max_queries: int = 6
+
+
+@router.post("/deep-research")
+async def deep_research_endpoint(
+    request: DeepResearchRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Lance une recherche approfondie multi-sources.
+
+    Workflow : décomposition en sous-requêtes -> recherches parallèles -> synthèse LLM.
+    Retourne un flux SSE avec la progression et le rapport final.
+    """
+    from app.services.deep_research import deep_research
+
+    llm_service = get_llm_service()
+
+    # Créer ou récupérer la conversation
+    if request.conversation_id:
+        result = await session.execute(
+            select(Conversation).where(Conversation.id == request.conversation_id)
+        )
+        conversation = result.scalar_one_or_none()
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+    else:
+        conversation = Conversation(title=f"Recherche : {request.question[:40]}")
+        session.add(conversation)
+        await session.flush()
+
+    # Sauvegarder la question utilisateur
+    user_message = Message(
+        conversation_id=conversation.id,
+        role="user",
+        content=f"[Recherche approfondie] {request.question}",
+    )
+    session.add(user_message)
+    await session.commit()
+
+    async def stream_research() -> AsyncGenerator[str, None]:
+        """Stream les événements de progression de la recherche."""
+        # Envoyer l'ID de conversation pour le frontend
+        yield f"data: {json.dumps({'type': 'conversation_id', 'content': conversation.id})}\n\n"
+
+        full_synthesis = ""
+        sources_data: list[dict] = []
+
+        async for progress in deep_research(
+            request.question,
+            llm_service,
+            max_queries=request.max_queries,
+        ):
+            event_data: dict = {
+                "type": progress.type,
+                "content": progress.content,
+                "step": progress.step,
+                "total_steps": progress.total_steps,
+                "query": progress.query,
+            }
+
+            if progress.type == "synthesizing" and progress.content:
+                full_synthesis += progress.content
+                # Streamer le contenu de la synthèse comme du texte
+                yield f"data: {json.dumps({'type': 'text', 'content': progress.content})}\n\n"
+                continue
+
+            if progress.type == "done":
+                full_synthesis = progress.content
+                sources_data = [
+                    {"title": s.title, "url": s.url, "snippet": s.snippet}
+                    for s in progress.sources
+                ]
+                # Sauvegarder la réponse en base
+                try:
+                    async with get_session() as save_session:
+                        assistant_message = Message(
+                            conversation_id=conversation.id,
+                            role="assistant",
+                            content=full_synthesis,
+                        )
+                        save_session.add(assistant_message)
+                        await save_session.commit()
+                except Exception as e:
+                    logger.error(f"Erreur sauvegarde recherche : {e}")
+
+                yield f"data: {json.dumps({'type': 'sources', 'content': json.dumps(sources_data)})}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'content': ''})}\n\n"
+                continue
+
+            yield f"data: {json.dumps(event_data)}\n\n"
+
+    return StreamingResponse(
+        stream_research(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 @router.post("/send")
 async def send_message(
     request: ChatRequest,
@@ -663,9 +777,9 @@ async def _do_stream_response(
     # Add memory tools (create_contact, create_project)
     tools = MEMORY_TOOLS + tools
 
-    # Add web_search tool for non-Gemini providers (if enabled)
+    # Add web_search + browser tools for non-Gemini providers (if enabled)
     if web_search_enabled and llm_service.config.provider.value != "gemini":
-        tools = [WEB_SEARCH_TOOL] + tools
+        tools = [WEB_SEARCH_TOOL, BROWSER_TOOL] + tools
 
     if tools:
         logger.info(f"Providing {len(tools)} tools to LLM")
@@ -676,9 +790,11 @@ async def _do_stream_response(
         capabilities = "\n\n## Tes capacités (outils)\nTu disposes d'outils que tu DOIS utiliser quand c'est pertinent. Ne dis JAMAIS que tu ne peux pas accéder à internet ou que tu ne peux pas faire quelque chose si un outil le permet.\n"
         if "web_search" in tool_names:
             capabilities += "- **web_search** : Recherche sur internet. Utilise-le pour toute question sur l'actualité, analyser un site web, ou trouver des informations récentes.\n"
+        if "browser_navigate" in tool_names:
+            capabilities += "- **browser_navigate** : Navigue sur une page web, extrait le contenu, interagit (clic, formulaire, liens, screenshot). Utilise-le quand l'utilisateur demande d'aller sur un site précis.\n"
         if "create_contact" in tool_names:
             capabilities += "- **create_contact** / **create_project** : Créer des contacts et projets en mémoire.\n"
-        mcp_tools = [n for n in tool_names if n not in ("web_search", "create_contact", "create_project")]
+        mcp_tools = [n for n in tool_names if n not in ("web_search", "browser_navigate", "create_contact", "create_project")]
         if mcp_tools:
             capabilities += f"- **Outils externes** : {', '.join(mcp_tools[:10])}{'...' if len(mcp_tools) > 10 else ''}\n"
         context.system_prompt += capabilities
@@ -904,6 +1020,33 @@ async def _execute_tools_and_continue(
                         self.execution_time_ms = exec_time
 
                 result = WebSearchError(str(e), execution_time)
+        elif tc.name == "browser_navigate":
+            # Built-in browser automation tool
+            import time
+            start_time = time.time()
+            try:
+                browser_result = await execute_browser_action(tc.arguments)
+                execution_time = (time.time() - start_time) * 1000
+
+                class BrowserResult:
+                    def __init__(self, result_text: str, exec_time: float):
+                        self.success = True
+                        self.result = result_text
+                        self.error = None
+                        self.execution_time_ms = exec_time
+
+                result = BrowserResult(browser_result, execution_time)
+            except Exception as e:
+                execution_time = (time.time() - start_time) * 1000
+
+                class BrowserError:
+                    def __init__(self, error_msg: str, exec_time: float):
+                        self.success = False
+                        self.result = None
+                        self.error = error_msg
+                        self.execution_time_ms = exec_time
+
+                result = BrowserError(str(e), execution_time)
         elif tc.name in MEMORY_TOOL_NAMES:
             # Built-in memory tools (create_contact, create_project)
             import time

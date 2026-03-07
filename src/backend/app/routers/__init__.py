@@ -7,6 +7,9 @@ FastAPI router modules for each feature area.
 # v0.5 - Agents IA Embarqués (Atelier)
 from app.routers.agents import router as agents_router
 from app.routers.board import router as board_router
+
+# v0.6 - Browser Automation (Manus-inspired)
+from app.routers.browser import router as browser_router
 from app.routers.calculators import router as calc_router
 from app.routers.calendar import router as calendar_router
 from app.routers.chat import router as chat_router
@@ -71,4 +74,5 @@ __all__ = [
     "commands_v3_router",  # V3 - Commands unifiées
     "tools_router",  # V3 - Installed Tools
     "agents_router",  # v0.5 - Agents IA Embarqués (Atelier)
+    "browser_router",  # v0.6 - Browser Automation
 ]

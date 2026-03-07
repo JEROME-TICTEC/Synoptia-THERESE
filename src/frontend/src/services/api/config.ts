@@ -154,7 +154,7 @@ export async function setWorkingDirectory(path: string): Promise<WorkingDirector
 }
 
 // LLM Configuration
-export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'mistral' | 'grok' | 'openrouter' | 'ollama';
+export type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'mistral' | 'grok' | 'openrouter' | 'perplexity' | 'deepseek' | 'ollama';
 
 export interface LLMConfig {
   provider: LLMProvider;

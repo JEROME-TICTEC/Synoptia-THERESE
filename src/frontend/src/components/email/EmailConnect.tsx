@@ -87,14 +87,14 @@ export function EmailConnect({ onSuccess }: EmailConnectProps) {
             </li>
             <li>Type d'application : "Application de bureau"</li>
             <li>Ajouter l'URI de redirection : http://localhost:8080/oauth/callback</li>
-            <li>Copier le Client ID et Client Secret ci-dessous</li>
+            <li>Copier l'ID client et le Code secret du client ci-dessous</li>
           </ol>
         </div>
 
         {/* Form */}
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-text-muted mb-2 block">Client ID</label>
+            <label className="text-sm text-text-muted mb-2 block">ID client</label>
             <input
               type="text"
               value={clientId}
@@ -106,7 +106,7 @@ export function EmailConnect({ onSuccess }: EmailConnectProps) {
           </div>
 
           <div>
-            <label className="text-sm text-text-muted mb-2 block">Client Secret</label>
+            <label className="text-sm text-text-muted mb-2 block">Code secret du client</label>
             <input
               type="password"
               value={clientSecret}

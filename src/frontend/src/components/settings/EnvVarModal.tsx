@@ -26,11 +26,11 @@ const ENV_VAR_CONFIG: Record<string, {
   // Google Workspace
   GOOGLE_OAUTH_CLIENT_ID: {
     consoleUrl: 'https://console.cloud.google.com/apis/credentials',
-    label: 'Google OAuth Client ID',
+    label: 'Google OAuth - ID client',
   },
   GOOGLE_OAUTH_CLIENT_SECRET: {
     consoleUrl: 'https://console.cloud.google.com/apis/credentials',
-    label: 'Google OAuth Client Secret',
+    label: 'Google OAuth - Code secret du client',
   },
   // Productivite
   NOTION_API_KEY: {
@@ -87,6 +87,12 @@ const ENV_VAR_CONFIG: Record<string, {
     prefix: 'pplx-',
     consoleUrl: 'https://www.perplexity.ai/settings/api',
     label: 'Perplexity API Key',
+  },
+  // LLM (DeepSeek)
+  DEEPSEEK_API_KEY: {
+    prefix: 'sk-',
+    consoleUrl: 'https://platform.deepseek.com/api_keys',
+    label: 'DeepSeek API Key',
   },
   // CRM (Tier A)
   PIPEDRIVE_API_TOKEN: {

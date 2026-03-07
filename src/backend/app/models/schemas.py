@@ -495,12 +495,22 @@ class OllamaModelInfo(BaseModel):
     digest: str | None = None
 
 
+class OllamaModelRecommendation(BaseModel):
+    """Recommandation de modèle Ollama selon la tâche."""
+
+    general: str | None = None
+    coding: str | None = None
+    writing: str | None = None
+    fast: str | None = None
+
+
 class OllamaStatusResponse(BaseModel):
     """Ollama status response."""
 
     available: bool
     base_url: str
     models: list[OllamaModelInfo] = []
+    recommendations: OllamaModelRecommendation | None = None
     error: str | None = None
 
 

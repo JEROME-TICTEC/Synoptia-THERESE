@@ -158,6 +158,66 @@ export async function* streamMessage(
   }
 }
 
+// Deep Research - Streaming (SSE)
+export interface DeepResearchRequest {
+  question: string;
+  conversation_id?: string;
+  max_queries?: number;
+}
+
+export async function* streamDeepResearch(
+  req: DeepResearchRequest,
+  signal?: AbortSignal,
+): AsyncGenerator<StreamChunk> {
+  const url = `${API_BASE}/api/chat/deep-research`;
+  const response = await apiFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => null);
+    throw new ApiError(response.status, response.statusText, errorText || undefined);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6).trim();
+          if (!data || data === '[DONE]') continue;
+          try {
+            const chunk = JSON.parse(data) as StreamChunk;
+            yield chunk;
+            if (chunk.type === 'done' || chunk.type === 'error') {
+              return;
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 // Conversations
 export async function listConversations(
   limit = 50,

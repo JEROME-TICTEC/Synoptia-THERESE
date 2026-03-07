@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   MessageSquare,
   Plus,
   Trash2,
+  Pencil,
   ChevronLeft,
   Search,
   MoreHorizontal,
@@ -31,6 +32,7 @@ export function ConversationSidebar({ isOpen, onClose }: ConversationSidebarProp
     loadConversation,
     createConversation,
     deleteConversation,
+    renameConversation,
   } = useChatStore();
   const { maskText } = useDemoMask();
 
@@ -42,20 +44,11 @@ export function ConversationSidebar({ isOpen, onClose }: ConversationSidebarProp
   // Group by date
   const grouped = groupConversationsByDate(filteredConversations);
 
-  // Handle new conversation - create on backend first
-  const handleNewConversation = useCallback(async () => {
-    try {
-      // Create on backend first to get the real ID
-      const backendConv = await api.createConversation('Nouvelle conversation');
-      // Create locally with the backend ID
-      const localId = createConversation();
-      // Update local ID to match backend ID
-      useChatStore.getState().updateConversationId(localId, backendConv.id);
-    } catch (error) {
-      console.error('Failed to create conversation on backend:', error);
-      // Still create locally as fallback
-      createConversation();
-    }
+  // Handle new conversation - création locale uniquement (lazy save)
+  // La conversation ne sera persistée en backend qu'au premier message envoyé
+  // (via ChatInput qui capture le backendConversationId du stream)
+  const handleNewConversation = useCallback(() => {
+    createConversation();
     onClose();
   }, [createConversation, onClose]);
 
@@ -232,6 +225,7 @@ export function ConversationSidebar({ isOpen, onClose }: ConversationSidebarProp
                               e.stopPropagation();
                               setContextMenuId(conversation.id);
                             }}
+                            onRename={(title) => renameConversation(conversation.id, title)}
                             onDelete={() => handleDelete(conversation.id)}
                             onCloseContextMenu={() => setContextMenuId(null)}
                             maskTextFn={maskText}
@@ -270,6 +264,7 @@ interface ConversationItemProps {
   showContextMenu: boolean;
   onSelect: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
+  onRename: (title: string) => void;
   onDelete: () => void;
   onCloseContextMenu: () => void;
   maskTextFn?: (text: string) => string;
@@ -282,22 +277,76 @@ function ConversationItem({
   showContextMenu,
   onSelect,
   onContextMenu,
+  onRename,
   onDelete,
   onCloseContextMenu: _onCloseContextMenu,
   maskTextFn,
 }: ConversationItemProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(conversation.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const messageCount = conversation.messages?.length || conversation.messageCount || 0;
   const lastMessage = conversation.messages?.[conversation.messages.length - 1];
   const rawPreview = lastMessage?.content?.slice(0, 60) || 'Pas de messages';
   const displayTitle = maskTextFn ? maskTextFn(conversation.title) : conversation.title;
   const preview = maskTextFn ? maskTextFn(rawPreview) : rawPreview;
 
+  // Focus l'input quand on passe en mode édition
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  // Valider le renommage
+  const commitRename = useCallback(() => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== conversation.title) {
+      onRename(trimmed);
+    }
+    setIsEditing(false);
+  }, [editValue, conversation.title, onRename]);
+
+  // Annuler le renommage
+  const cancelRename = useCallback(() => {
+    setEditValue(conversation.title);
+    setIsEditing(false);
+  }, [conversation.title]);
+
+  // Gestion clavier dans l'input de renommage
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      commitRename();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelRename();
+    }
+  }, [commitRename, cancelRename]);
+
+  // Double-clic pour renommer
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditValue(conversation.title);
+    setIsEditing(true);
+  }, [conversation.title]);
+
+  // Renommer depuis le menu contextuel
+  const handleRenameFromMenu = useCallback(() => {
+    setEditValue(conversation.title);
+    setIsEditing(true);
+  }, [conversation.title]);
+
   return (
     <div className="relative px-2">
       <button
         onClick={onSelect}
         onContextMenu={onContextMenu}
-        disabled={isDeleting}
+        onDoubleClick={handleDoubleClick}
+        disabled={isDeleting || isEditing}
         className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left group ${
           isActive
             ? 'bg-accent-cyan/10 border border-accent-cyan/30'
@@ -319,7 +368,20 @@ function ConversationItem({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-text truncate">{displayTitle}</p>
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={handleKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full text-sm font-medium text-text bg-background/60 border border-accent-cyan/50 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-accent-cyan/50"
+            />
+          ) : (
+            <p className="text-sm font-medium text-text truncate">{displayTitle}</p>
+          )}
           <p className="text-xs text-text-muted truncate mt-0.5">{preview}</p>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs text-text-muted/60">
@@ -355,6 +417,15 @@ function ConversationItem({
             className="absolute right-4 top-12 z-10 w-40 bg-surface border border-border rounded-lg shadow-xl py-1"
             onClick={(e) => e.stopPropagation()}
           >
+            <motion.button
+              onClick={handleRenameFromMenu}
+              whileHover={{ x: 2 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-muted hover:bg-background/40 transition-colors"
+            >
+              <Pencil className="w-4 h-4" />
+              Renommer
+            </motion.button>
             <motion.button
               onClick={onDelete}
               whileHover={{ x: 2 }}

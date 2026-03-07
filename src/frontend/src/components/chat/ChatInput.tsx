@@ -6,7 +6,7 @@ import {
   type KeyboardEvent,
   type ChangeEvent,
 } from 'react';
-import { Send, Square, Paperclip, Mic, MicOff, Loader2, X, Cpu } from 'lucide-react';
+import { Send, Square, Paperclip, Mic, MicOff, Loader2, X, Cpu, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from '../ui/Button';
@@ -16,7 +16,7 @@ import { useChatStore } from '../../stores/chatStore';
 import { useStatusStore } from '../../stores/statusStore';
 import { useFileDrop, type DroppedFile } from '../../hooks/useFileDrop';
 import { useVoiceRecorder } from '../../hooks/useVoiceRecorder';
-import { streamMessage, indexFile, ApiError, getLLMConfig, setLLMConfig, type LLMProvider } from '../../services/api';
+import { streamMessage, streamDeepResearch, indexFile, ApiError, getLLMConfig, setLLMConfig, type LLMProvider } from '../../services/api';
 import { useGhostText } from '../../hooks/useGhostText';
 import { cn } from '../../lib/utils';
 
@@ -436,6 +436,76 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
     }
   }, [input, isOffline, isStreaming, addMessage, updateMessage, setMessageEntities, setMessageMetadata, setStreaming, setActivity, currentConversationId, currentConversation, updateConversationId, deleteConversation, setQueuedPrompt]);
 
+  // Recherche approfondie
+  const handleDeepResearch = useCallback(async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isOffline || isStreaming) return;
+
+    setShowSlashMenu(false);
+    addMessage({ role: 'user', content: `[Recherche approfondie] ${trimmed}` });
+    setInput('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
+    setStreaming(true);
+    setActivity('thinking', 'Lancement de la recherche approfondie...');
+
+    const assistantMessageId = addMessage({
+      role: 'assistant',
+      content: '',
+      isStreaming: true,
+    });
+
+    let accumulatedContent = '';
+    let backendConversationId: string | null = null;
+
+    try {
+      const conversation = currentConversation();
+      const syncedConversationId = conversation?.synced ? currentConversationId : undefined;
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      const stream = streamDeepResearch({
+        question: trimmed,
+        conversation_id: syncedConversationId || undefined,
+      }, controller.signal);
+
+      for await (const chunk of stream) {
+        if (chunk.conversation_id && !backendConversationId) {
+          backendConversationId = chunk.conversation_id;
+          if (currentConversationId && currentConversationId !== backendConversationId) {
+            updateConversationId(currentConversationId, backendConversationId);
+          }
+        }
+
+        if (chunk.type === 'text') {
+          accumulatedContent += chunk.content;
+          updateMessage(assistantMessageId, accumulatedContent);
+          setActivity('streaming', 'Rédaction du rapport...');
+        } else if (chunk.type === 'decomposition' || chunk.type === 'searching' || chunk.type === 'search_done') {
+          setActivity('thinking', chunk.content || 'Recherche en cours...');
+        } else if (chunk.type === 'synthesizing' && !chunk.content) {
+          setActivity('thinking', 'Synthèse des sources...');
+        } else if (chunk.type === 'error') {
+          throw new Error(chunk.content || 'Erreur lors de la recherche');
+        }
+      }
+
+      updateMessage(assistantMessageId, accumulatedContent);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        updateMessage(assistantMessageId, accumulatedContent || '*(recherche interrompue)*');
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Erreur de recherche';
+        updateMessage(assistantMessageId, errorMessage);
+      }
+    } finally {
+      abortRef.current = null;
+      setStreaming(false);
+      setActivity('idle');
+    }
+  }, [input, isOffline, isStreaming, addMessage, updateMessage, setStreaming, setActivity, currentConversationId, currentConversation, updateConversationId]);
+
   // Ref stable pour sendMessage (évite dépendances circulaires dans useEffect)
   const sendMessageRef = useRef(sendMessage);
   sendMessageRef.current = sendMessage;
@@ -644,7 +714,7 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
           className="flex-shrink-0 h-9 w-9"
           disabled={isDisabled}
           onClick={handleAttachClick}
-          title="Joindre un fichier (⌘+O)"
+          title={`Joindre un fichier (${/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+'}O)`}
         >
           <Paperclip className="w-5 h-5" />
         </Button>
@@ -732,6 +802,18 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
             <Square className="w-4 h-4" />
           </Button>
         )}
+        {!isStreaming && input.trim() && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0 h-9 w-9 text-accent-cyan hover:bg-accent-cyan/10"
+            onClick={handleDeepResearch}
+            disabled={isDisabled}
+            title="Recherche approfondie (multi-sources)"
+          >
+            <Search className="w-4 h-4" />
+          </Button>
+        )}
         <Button
           variant="primary"
           size="icon"
@@ -768,7 +850,7 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
           <kbd className="px-1 rounded bg-surface-elevated">↵</kbd> nouvelle ligne
         </p>
         <p className="text-xs text-text-muted">
-          <kbd className="px-1 rounded bg-surface-elevated">⌘</kbd>+
+          <kbd className="px-1 rounded bg-surface-elevated">{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'}</kbd>+
           <kbd className="px-1 rounded bg-surface-elevated">K</kbd> commandes
         </p>
         {suggestion && (
