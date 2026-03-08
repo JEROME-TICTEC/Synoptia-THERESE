@@ -4,18 +4,18 @@ THERESE v2 - Test Configuration
 Pytest fixtures and configuration for all tests.
 """
 
-import asyncio
 import os
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
+from unittest.mock import MagicMock
 
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel
 
 # Ensure src/backend is on sys.path so 'app' module is importable
@@ -25,12 +25,7 @@ if _backend_dir not in sys.path:
 
 # Set test environment before importing app
 os.environ["THERESE_ENV"] = "test"
-os.environ["THERESE_DB_PATH"] = ":memory:"
-
-# Flag pour que le lifespan de l'app saute les services externes en mode test
 os.environ["THERESE_SKIP_SERVICES"] = "1"
-
-from contextlib import asynccontextmanager
 
 from app.main import app
 from app.models.database import get_session
@@ -40,7 +35,7 @@ from app.models.database import get_session
 # (init DB seulement, pas de Qdrant, embeddings, MCP, skills)
 @asynccontextmanager
 async def _test_lifespan(_app):
-    from app.models.database import init_db, close_db
+    from app.models.database import close_db, init_db
     await init_db()
     yield
     await close_db()
@@ -50,8 +45,6 @@ app.router.lifespan_context = _test_lifespan
 
 # Mock Qdrant : injecter un mock directement dans le singleton du module
 # pour que tous les imports (chat.py, memory.py, files.py etc.) le voient
-from unittest.mock import MagicMock
-
 import app.services.qdrant as _qdrant_module
 
 _mock_qdrant = MagicMock()
@@ -62,47 +55,16 @@ _mock_qdrant.delete_by_entity.return_value = 0
 _mock_qdrant.delete_by_scope.return_value = 0
 _mock_qdrant._initialized = True
 _mock_qdrant.is_initialized.return_value = True
-
-# Remplacer le singleton directement dans le module
 _qdrant_module._qdrant_service = _mock_qdrant
-
-# Aussi overrider la fonction factory pour que les nouveaux appels retournent le mock
-_original_get_qdrant = _qdrant_module.get_qdrant_service
 _qdrant_module.get_qdrant_service = lambda: _mock_qdrant
 
 
-# Test database setup
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-
-engine = create_async_engine(
-    TEST_DATABASE_URL,
-    echo=False,
-    connect_args={"check_same_thread": False},
-)
-
-async_session_maker = sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
-
-
-@pytest_asyncio.fixture(scope="function")
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Create a fresh database session for each test (async, pour les tests unitaires)."""
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
-
-    async with async_session_maker() as session:
-        yield session
-        await session.rollback()
-
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-
+# ============================================================
+# Awaitable wrappers pour TestClient sync
+# ============================================================
 
 class _AwaitableResponse:
-    """Wrapper pour que response = await client.get(...) fonctionne avec TestClient sync."""
+    """Wrapper pour que `response = await client.get(...)` fonctionne."""
 
     def __init__(self, response):
         self._response = response
@@ -141,27 +103,62 @@ class _AsyncCompatClient:
         return _AwaitableResponse(self._tc.delete(*args, **kwargs))
 
 
+# ============================================================
+# Fixtures
+# ============================================================
+
+@pytest_asyncio.fixture(scope="function")
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
+    """Session DB async pour les tests unitaires (services, etc.).
+
+    Utilise le AsyncSessionLocal de l'app (initialisé par le test lifespan)
+    pour que les données soient partagées avec les endpoints.
+    """
+    from app.models import database as db_module
+
+    # S'assurer que la DB est initialisée
+    if db_module.AsyncSessionLocal is None:
+        await db_module.init_db()
+
+    # Créer les tables
+    async with db_module.async_engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+
+    async with db_module.AsyncSessionLocal() as session:
+        yield session
+        await session.rollback()
+
+    # Nettoyer les tables après chaque test
+    async with db_module.async_engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
+
+
 @pytest.fixture(scope="function")
 def client():
-    """Create test client (sync, compatible await via _AsyncCompatClient).
+    """Test client HTTP sync, compatible await.
 
-    Le TestClient utilise la DB initialisée par le test lifespan.
-    Les tests qui créent des données les verront via les endpoints.
+    Le TestClient lance le lifespan (init_db), donc la DB est prête.
+    Les tables sont recréées à chaque test pour l'isolation.
     """
     with TestClient(app, raise_server_exceptions=False) as tc:
+        # Isolation : drop + recreate toutes les tables avant chaque test
+        from app.models import database as db_module
+        if db_module.sync_engine is not None:
+            SQLModel.metadata.drop_all(db_module.sync_engine)
+            SQLModel.metadata.create_all(db_module.sync_engine)
         yield _AsyncCompatClient(tc)
 
 
 @pytest.fixture
 def sync_client() -> TestClient:
-    """Create synchronous test client for simple tests."""
+    """Test client synchrone classique."""
     return TestClient(app)
 
 
 # ============================================================
 # Mock data fixtures
 # ============================================================
-
 
 @pytest.fixture
 def sample_contact_data():
@@ -275,10 +272,11 @@ def sample_mcp_server():
 # Helper functions
 # ============================================================
 
-
 def assert_response_ok(response, expected_status=200):
     """Assert response is successful."""
-    assert response.status_code == expected_status, f"Expected {expected_status}, got {response.status_code}: {response.text}"
+    assert response.status_code == expected_status, (
+        f"Expected {expected_status}, got {response.status_code}: {response.text}"
+    )
 
 
 def assert_contains_keys(data: dict, keys: list):
