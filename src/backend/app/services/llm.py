@@ -256,10 +256,17 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
             therese_md_section = f"\n\n## Instructions THERESE.md:\n{content}"
 
         # BUG-053 : injecter la date réelle pour éviter [Date actuelle] non substituée
+        # str(now.day) : cross-platform, pas de zéro de tête (évite strftime POSIX-only)
+        # Table de mois FR statique : évite la locale système (anglais sur Windows US)
+        _MOIS_FR = [
+            "janvier", "février", "mars", "avril", "mai", "juin",
+            "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+        ]
         now = datetime.now(UTC)
-        current_date = now.strftime("%-d %B %Y, %H:%M UTC")
-        # Exemple de date pour l'instruction de récapitulatif (pas de placeholder)
-        current_date_example = now.strftime("%-d %B %Y")
+        day = str(now.day)
+        month_fr = _MOIS_FR[now.month - 1]
+        current_date = f"{day} {month_fr} {now.strftime('%Y, %H:%M')} UTC"
+        current_date_example = f"{day} {month_fr} {now.strftime('%Y')}"
 
         if not profile or not profile.name:
             # Substitution manuelle (pas .format()) pour éviter ValueError

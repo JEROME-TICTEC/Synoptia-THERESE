@@ -4114,3 +4114,93 @@ class TestBUG_MCPPollingStarting:
         assert "status === 'starting'" in content
         assert 'setInterval' in content
         assert '3000' in content  # 3s interval
+
+
+class TestBUGOpenRouterStrftimeWindows:
+    """BUG openrouter-strftime : %-d non supporté sur Windows → ValueError crash."""
+
+    def test_current_date_format_no_percent_minus_d(self):
+        """La construction de current_date ne doit pas utiliser %-d (spécifique Linux)."""
+        import pathlib
+        src = pathlib.Path("src/backend/app/services/llm.py").read_text(encoding="utf-8")
+        # %-d est une extension POSIX uniquement → doit avoir été supprimé
+        assert "%-d" not in src, (
+            "%-d trouvé dans llm.py : non supporté sur Windows "
+            "(ValueError: Invalid format string)"
+        )
+
+    def test_current_date_cross_platform_format(self):
+        """La date générée est une chaîne non vide et ne contient pas de placeholder."""
+        from datetime import UTC, datetime
+        now = datetime.now(UTC)
+        day = str(now.day)
+        current_date = f"{day} {now.strftime('%B %Y, %H:%M')} UTC"
+        current_date_example = f"{day} {now.strftime('%B %Y')}"
+        assert current_date  # non vide
+        assert "{" not in current_date  # pas de placeholder non substitué
+        assert current_date_example
+        # Pas de zéro de tête sur le jour (ex: "5 mars" pas "05 mars")
+        assert not current_date.startswith("0"), (
+            f"Le jour ne doit pas avoir de zéro de tête : {current_date!r}"
+        )
+
+    def test_get_system_prompt_no_valueerror(self):
+        """_get_system_prompt_with_identity ne lève pas ValueError (ex-bug strftime POSIX)."""
+        from unittest.mock import MagicMock, patch
+        from app.services.llm import LLMService, LLMConfig, LLMProvider
+
+        config = LLMConfig(provider=LLMProvider.ANTHROPIC, model="claude-3-haiku-20240307")
+        svc = LLMService(config)
+
+        mock_profile = MagicMock()
+        mock_profile.name = "Jérôme"
+        mock_profile.format_for_llm.return_value = "Prénom : Jérôme"
+
+        # _get_system_prompt_with_identity() appelle get_cached_profile() en interne
+        # On patche get_cached_profile et load_therese_md
+        with patch("app.services.llm.load_therese_md", return_value=""),              patch("app.services.user_profile.get_cached_profile", return_value=mock_profile):
+            result = svc._get_system_prompt_with_identity()
+
+        assert "{current_date}" not in result  # placeholder bien substitué
+        assert result  # non vide
+
+
+class TestBUGTrafficLightsMacOnWindows:
+    """BUG traffic-lights : traffic lights macOS toujours affichés sur Windows."""
+
+    def test_onboarding_wizard_has_ismac_guard(self):
+        """OnboardingWizard.tsx doit conditionner les traffic lights par isMac."""
+        import pathlib
+        src = pathlib.Path(
+            "src/frontend/src/components/onboarding/OnboardingWizard.tsx"
+        ).read_text(encoding="utf-8")
+        # isMac doit être déclaré
+        assert "isMac" in src, "isMac non trouvé dans OnboardingWizard.tsx"
+        # Les traffic lights doivent être dans un bloc {isMac && ...}
+        assert "{isMac && (" in src, (
+            "Les traffic lights ne sont pas conditionnés par {isMac && ...}"
+        )
+
+    def test_chat_header_has_ismac_guard(self):
+        """ChatHeader.tsx doit aussi conditionner les traffic lights par isMac."""
+        import pathlib
+        src = pathlib.Path(
+            "src/frontend/src/components/chat/ChatHeader.tsx"
+        ).read_text(encoding="utf-8")
+        assert "isMac" in src
+
+    def test_onboarding_wizard_no_unconditional_traffic_lights(self):
+        """Pas de traffic lights affichés sans vérification de plateforme."""
+        import pathlib
+        src = pathlib.Path(
+            "src/frontend/src/components/onboarding/OnboardingWizard.tsx"
+        ).read_text(encoding="utf-8")
+        # Le bloc traffic lights ne doit PAS apparaître hors du guard isMac
+        # Vérifier que bg-red-500 + bg-yellow-500 sont dans un contexte isMac
+        idx_guard = src.find("{isMac && (")
+        idx_red = src.find("bg-red-500 hover:bg-red-600")
+        assert idx_guard != -1, "Guard isMac manquant"
+        assert idx_red != -1, "Bouton rouge manquant"
+        assert idx_red > idx_guard, (
+            "Le bouton rouge (traffic light) apparaît avant le guard isMac"
+        )
