@@ -2,11 +2,10 @@
 Tests pour le système d'agents IA embarqués (Atelier).
 """
 
-import json
-import pytest
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
+import pytest
 
 # ============================================================
 # Config
@@ -72,7 +71,7 @@ class TestAgentMessageBus:
 
     @pytest.mark.asyncio
     async def test_send_and_receive(self):
-        from app.services.agents.bus import AgentMessageBus, AgentMessage
+        from app.services.agents.bus import AgentMessage, AgentMessageBus
 
         bus = AgentMessageBus()
         msg = AgentMessage(

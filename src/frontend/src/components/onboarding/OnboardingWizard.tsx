@@ -38,6 +38,13 @@ export function OnboardingWizard({ isOpen, onComplete }: OnboardingWizardProps) 
   const handleMaximize = () => getCurrentWindow().toggleMaximize();
   const handleClose = () => getCurrentWindow().close();
 
+  // BUG-traffic-lights : afficher les traffic lights uniquement sur macOS
+  // navigator.platform est déprécié mais reste le seul moyen fiable sous WKWebView (Tauri macOS)
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+  // Sur Windows + Linux : tauri.conf.json a decorations:false → pas de barre de titre native
+  // On affiche un bouton fermer minimaliste pour que la fenêtre soit fermable
+  const isDesktopNonMac = typeof navigator !== 'undefined' && !isMac;
+
   // Reset on open
   useEffect(() => {
     if (isOpen) {
@@ -101,24 +108,40 @@ export function OnboardingWizard({ isOpen, onComplete }: OnboardingWizardProps) 
             data-tauri-drag-region
             className="absolute top-0 left-0 right-0 h-10 z-[101] flex items-center px-4"
           >
-            {/* Window controls (macOS style) */}
-            <div className="flex items-center gap-2">
+            {/* Window controls (macOS style uniquement) */}
+            {isMac && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleClose}
+                  className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
+                  title="Fermer"
+                />
+                <button
+                  onClick={handleMinimize}
+                  className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"
+                  title="Réduire"
+                />
+                <button
+                  onClick={handleMaximize}
+                  className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"
+                  title="Agrandir"
+                />
+              </div>
+            )}
+            {/* Windows/Linux : decorations:false → pas de barre de titre native.
+                Afficher un bouton fermer discret pour que la fenêtre soit fermable. */}
+            {isDesktopNonMac && (
               <button
                 onClick={handleClose}
-                className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
-                title="Fermer"
-              />
-              <button
-                onClick={handleMinimize}
-                className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"
-                title="Réduire"
-              />
-              <button
-                onClick={handleMaximize}
-                className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"
-                title="Agrandir"
-              />
-            </div>
+                className="ml-auto p-1 rounded hover:bg-surface-elevated/60 transition-colors text-text-muted hover:text-text"
+                title="Fermer (Échap)"
+                aria-label="Fermer"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Modal Container */}
