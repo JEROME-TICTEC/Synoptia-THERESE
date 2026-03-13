@@ -239,10 +239,7 @@ class SkillsRegistry:
             if re.match(r'^[-=_#*\s]+$', t):
                 return False
             # Rejeter les patterns génériques (Slide 1, Section 2, etc.)
-            for pat in generic_patterns:
-                if re.match(pat, t_clean, re.IGNORECASE):
-                    return False
-            return True
+            return all(not re.match(pat, t_clean, re.IGNORECASE) for pat in generic_patterns)
 
         def _clean_title(t: str) -> str:
             """Nettoie un titre brut (supprime séparateurs décoratifs)."""

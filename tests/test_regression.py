@@ -3796,10 +3796,10 @@ class TestBUG063_OllamaModelDefaultConfig:
             "_default_config doit logger les préférences lues depuis la DB (BUG-063)"
         )
 
-    def test_default_config_sqlite_timeout(self):
+    def test_default_config_uses_singleton(self):
         content = self.LLM_PY.read_text(encoding="utf-8")
-        assert 'connect_args={"timeout": 5}' in content or "connect_args" in content, (
-            "_default_config doit utiliser un timeout SQLite pour éviter les locks (BUG-063)"
+        assert "get_sync_connection" in content, (
+            "_default_config doit utiliser le singleton DB (get_sync_connection) au lieu d'engines jetables (BUG-063)"
         )
 
 

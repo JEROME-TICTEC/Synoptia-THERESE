@@ -55,6 +55,7 @@ export const PROVIDERS: ProviderConfig[] = [
     models: [
       { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', badge: 'Flagship' },
       { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', badge: 'Rapide' },
+      { id: 'gemini-3.1-flash-lite-preview', name: 'Gemini 3.1 Flash Lite', badge: 'Économique' },
       { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', badge: 'Recommandé' },
       { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
     ],
@@ -66,7 +67,8 @@ export const PROVIDERS: ProviderConfig[] = [
     keyPlaceholder: '...',
     consoleUrl: 'https://console.mistral.ai/api-keys',
     models: [
-      { id: 'mistral-large-latest', name: 'Mistral Large', badge: 'Flagship' },
+      { id: 'mistral-large-latest', name: 'Mistral Large 3', badge: 'Flagship' },
+      { id: 'mistral-large-2512', name: 'Mistral Large 3 (fixé)', badge: 'Stable' },
       { id: 'codestral-latest', name: 'Codestral', badge: 'Coding' },
       { id: 'devstral-small-latest', name: 'Devstral Small', badge: 'Dev' },
       { id: 'mistral-small-latest', name: 'Mistral Small', badge: 'Économique' },
@@ -97,6 +99,8 @@ export const PROVIDERS: ProviderConfig[] = [
       { id: 'anthropic/claude-opus-4-6', name: 'Claude Opus 4.6', badge: 'Premium' },
       { id: 'openai/gpt-5.2', name: 'GPT-5.2' },
       { id: 'google/gemini-3.1-pro', name: 'Gemini 3.1 Pro' },
+      { id: 'nvidia/nemotron-3-super-120b-a12b', name: 'Nemotron 3 Super 120B', badge: 'NVIDIA' },
+      { id: 'nvidia/nemotron-3-nano-30b-a3b', name: 'Nemotron 3 Nano 30B', badge: 'Économique' },
       { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick', badge: 'Open Source' },
     ],
   },

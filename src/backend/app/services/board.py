@@ -45,7 +45,7 @@ def validate_advisor_providers() -> bool:
         True si 5 providers distincts, False sinon
     """
     providers_used = set()
-    for role, config in ADVISOR_CONFIG.items():
+    for _role, config in ADVISOR_CONFIG.items():
         provider = config.get("preferred_provider")
         if provider in providers_used:
             logger.warning(f"Provider {provider} utilisé par plusieurs conseillers!")

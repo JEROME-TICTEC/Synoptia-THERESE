@@ -502,9 +502,7 @@ class CalDAVProvider(CalendarProvider):
 
         if dtend:
             end_val = dtend.dt
-            if isinstance(end_val, datetime):
-                end = end_val
-            elif isinstance(end_val, date):
+            if isinstance(end_val, (datetime, date)):
                 end = end_val
 
         # Extract attendees

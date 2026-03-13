@@ -489,11 +489,10 @@ def _validate_imports(code: str, format_type: str) -> tuple[bool, str]:
                 module_root = alias.name.split(".")[0]
                 if module_root not in {m.split(".")[0] for m in allowed}:
                     return False, f"Import interdit : {alias.name}"
-        elif isinstance(node, ast.ImportFrom):
-            if node.module:
-                module_root = node.module.split(".")[0]
-                if module_root not in {m.split(".")[0] for m in allowed}:
-                    return False, f"Import interdit : from {node.module}"
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            module_root = node.module.split(".")[0]
+            if module_root not in {m.split(".")[0] for m in allowed}:
+                return False, f"Import interdit : from {node.module}"
 
     return True, ""
 

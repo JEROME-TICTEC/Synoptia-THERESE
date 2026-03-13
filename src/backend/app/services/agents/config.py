@@ -31,6 +31,10 @@ AVAILABLE_MODELS = [
     {"id": "grok-4-1-fast-reasoning", "name": "Grok 4.1 Fast", "provider": "grok"},
     # Mistral
     {"id": "mistral-large-latest", "name": "Mistral Large 3", "provider": "mistral"},
+    {"id": "mistral-large-2512", "name": "Mistral Large 3 (fixé)", "provider": "mistral"},
+    # OpenRouter (NVIDIA Nemotron 3)
+    {"id": "nvidia/nemotron-3-super-120b-a12b", "name": "Nemotron 3 Super 120B", "provider": "openrouter"},
+    {"id": "nvidia/nemotron-3-nano-30b-a3b", "name": "Nemotron 3 Nano 30B", "provider": "openrouter"},
     # Local (Ollama)
     {"id": "qwen3:32b", "name": "Qwen 3 32B (local)", "provider": "ollama"},
     {"id": "mistral-nemo:12b", "name": "Mistral Nemo 12B (local)", "provider": "ollama"},

@@ -157,9 +157,7 @@ class PromptSecurityService:
                     detected_details = f"Pattern matched: {pattern.pattern[:50]}..."
 
         # Determine if safe
-        if highest_threat == ThreatLevel.CRITICAL:
-            is_safe = False
-        elif highest_threat == ThreatLevel.HIGH:
+        if highest_threat == ThreatLevel.CRITICAL or highest_threat == ThreatLevel.HIGH:
             is_safe = False
         elif highest_threat == ThreatLevel.MEDIUM:
             is_safe = not self.strict_mode

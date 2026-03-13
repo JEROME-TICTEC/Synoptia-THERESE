@@ -38,9 +38,7 @@ def _try_keyring_available() -> bool:
         # Test if backend is available
         backend = keyring.get_keyring()
         # Exclude fail backend
-        if "fail" in backend.__class__.__name__.lower():
-            return False
-        return True
+        return "fail" not in backend.__class__.__name__.lower()
     except Exception:
         return False
 

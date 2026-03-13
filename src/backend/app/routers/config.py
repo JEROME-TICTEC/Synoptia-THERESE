@@ -1121,19 +1121,35 @@ async def get_onboarding_status(session: AsyncSession = Depends(get_session)):
     Check if onboarding has been completed.
 
     Returns the onboarding completion status.
+    Detects existing data in DB to avoid re-triggering onboarding after a restore.
     """
+    from app.models.entities import Contact, Conversation
+    from sqlalchemy import func
+
     result = await session.execute(
         select(Preference).where(Preference.key == "onboarding_completed")
     )
     pref = result.scalar_one_or_none()
 
-    if not pref:
-        return {"completed": False, "completed_at": None}
+    if pref and pref.value == "true":
+        return {
+            "completed": True,
+            "completed_at": pref.updated_at.isoformat() if pref.updated_at else None,
+        }
 
-    return {
-        "completed": pref.value == "true",
-        "completed_at": pref.updated_at.isoformat() if pref.updated_at else None,
-    }
+    # Si pas de flag mais DB contient des donnees -> onboarding deja fait
+    # (cas d'une DB restauree depuis un backup anterieur au flag)
+    conv_count = await session.execute(select(func.count()).select_from(Conversation))
+    contact_count = await session.execute(select(func.count()).select_from(Contact))
+    has_data = (conv_count.scalar_one() > 0) or (contact_count.scalar_one() > 0)
+
+    if has_data:
+        new_pref = Preference(key="onboarding_completed", value="true", category="system")
+        session.add(new_pref)
+        await session.commit()
+        return {"completed": True, "completed_at": None}
+
+    return {"completed": False, "completed_at": None}
 
 
 @router.post("/onboarding-complete")

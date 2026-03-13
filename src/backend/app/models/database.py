@@ -175,6 +175,13 @@ def get_sync_session() -> Session:
     return Session(sync_engine)
 
 
+def get_sync_connection():
+    """Get a sync connection from the singleton engine (reuses WAL/cache PRAGMAs)."""
+    if sync_engine is None:
+        raise RuntimeError("Database not initialized. Call init_db() first.")
+    return sync_engine.connect()
+
+
 from contextlib import asynccontextmanager  # noqa: E402
 
 

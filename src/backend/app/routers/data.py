@@ -15,14 +15,26 @@ from datetime import UTC, datetime
 from app.config import settings
 from app.models.database import get_session
 from app.models.entities import (
+    Activity,
     BoardDecisionDB,
+    Calendar,
+    CalendarEvent,
     Contact,
     Conversation,
+    Deliverable,
+    EmailAccount,
+    EmailLabel,
+    EmailMessage,
     FileMetadata,
+    Invoice,
+    InvoiceLine,
     Message,
     Preference,
     Project,
+    PromptTemplate,
+    Task,
 )
+from app.models.entities_agents import AgentMessage, AgentTask, CodeChange
 from app.services.audit import (
     ActivityLog,
     AuditAction,
@@ -326,7 +338,24 @@ async def delete_all_data(
 
     from sqlalchemy import delete
 
-    # Supprimer dans l'ordre (relations)
+    # Supprimer dans l'ordre (FK en premier)
+    # -- Tables agents
+    await session.execute(delete(CodeChange))
+    await session.execute(delete(AgentMessage))
+    await session.execute(delete(AgentTask))
+    # -- Tables avec FK
+    await session.execute(delete(InvoiceLine))
+    await session.execute(delete(Invoice))
+    await session.execute(delete(CalendarEvent))
+    await session.execute(delete(Calendar))
+    await session.execute(delete(EmailLabel))
+    await session.execute(delete(EmailMessage))
+    await session.execute(delete(EmailAccount))
+    await session.execute(delete(Task))
+    await session.execute(delete(Deliverable))
+    await session.execute(delete(Activity))
+    await session.execute(delete(PromptTemplate))
+    # -- Tables principales (deja presentes)
     await session.execute(delete(Message))
     await session.execute(delete(Conversation))
     await session.execute(delete(Project))
@@ -340,6 +369,16 @@ async def delete_all_data(
     # On garde les logs d'audit (trace legale)
 
     await session.commit()
+
+    # Purger Qdrant (embeddings vectoriels)
+    try:
+        from app.services.qdrant import get_qdrant_service
+
+        qdrant = get_qdrant_service()
+        if qdrant.client:
+            qdrant.client.delete_collection(settings.qdrant_collection)
+    except Exception:
+        logger.warning("Impossible de purger la collection Qdrant")
 
     logger.warning("Toutes les donnees utilisateur ont ete supprimees (RGPD)")
 

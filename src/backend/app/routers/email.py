@@ -115,7 +115,7 @@ async def ensure_valid_access_token(
 
                 mcp_service = get_mcp_service()
 
-                for server_id, server in mcp_service.servers.items():
+                for _server_id, server in mcp_service.servers.items():
                     if 'google' in server.name.lower() and 'workspace' in server.name.lower():
                         env = server.env or {}
                         cid = env.get('GOOGLE_OAUTH_CLIENT_ID', '')
@@ -447,7 +447,7 @@ async def reauthorize_account(
         try:
             from app.services.mcp_service import get_mcp_service
             mcp_service = get_mcp_service()
-            for server_id, server in mcp_service.servers.items():
+            for _server_id, server in mcp_service.servers.items():
                 if 'google' in server.name.lower() and 'workspace' in server.name.lower():
                     env = server.env or {}
                     cid = env.get('GOOGLE_OAUTH_CLIENT_ID', '')

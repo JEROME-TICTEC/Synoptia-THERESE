@@ -72,14 +72,10 @@ function App() {
         }
       }
 
-      // Si toutes les tentatives échouent, vérifier le cache localStorage
-      // avant de forcer l'onboarding
-      const cached = localStorage.getItem('therese-onboarding-done');
-      if (cached === 'true') {
-        setShowOnboarding(false);
-      } else {
-        setShowOnboarding(true);
-      }
+      // Si toutes les tentatives echouent : NE PAS montrer l'onboarding
+      // pour eviter d'ecraser une DB existante (BUG perte de donnees v0.6.2)
+      console.error('Impossible de verifier le statut onboarding apres 5 tentatives');
+      setShowOnboarding(false);
       setCheckingOnboarding(false);
     }
 

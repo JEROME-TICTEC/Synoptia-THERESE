@@ -50,12 +50,11 @@ async def load_api_key_cache() -> None:
     global _api_key_cache, _api_key_cache_loaded
 
     try:
-        from app.config import settings
+        from app.models.database import get_sync_connection
         from app.services.encryption import get_encryption_service
-        from sqlalchemy import create_engine, text
+        from sqlalchemy import text
 
-        engine = create_engine(f"sqlite:///{settings.db_path}")
-        with engine.connect() as conn:
+        with get_sync_connection() as conn:
             result = conn.execute(
                 text("SELECT key, value FROM preferences WHERE key LIKE :pattern"),
                 {"pattern": "%api_key%"}
@@ -99,12 +98,11 @@ def _get_api_key_from_db(provider: str) -> str | None:
         import asyncio
 
         def _sync_read_key():
-            from app.config import settings
+            from app.models.database import get_sync_connection
             from app.services.encryption import get_encryption_service
-            from sqlalchemy import create_engine, text
+            from sqlalchemy import text
 
-            engine = create_engine(f"sqlite:///{settings.db_path}")
-            with engine.connect() as conn:
+            with get_sync_connection() as conn:
                 result = conn.execute(
                     text("SELECT value FROM preferences WHERE key = :key"),
                     {"key": f"{provider}_api_key"}
@@ -291,12 +289,10 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
         selected_provider = None
         selected_model = None
         try:
-            from app.config import settings
-            from sqlalchemy import create_engine, text
+            from app.models.database import get_sync_connection
+            from sqlalchemy import text
 
-            # timeout=5 pour éviter "database is locked" si l'engine async a une transaction ouverte
-            engine = create_engine(f"sqlite:///{settings.db_path}", connect_args={"timeout": 5})
-            with engine.connect() as conn:
+            with get_sync_connection() as conn:
                 for key in ("llm_provider", "llm_model"):
                     result = conn.execute(
                         text("SELECT value FROM preferences WHERE key = :key"),
@@ -586,11 +582,10 @@ def get_llm_service_for_provider(provider_name: str, model_override: str | None 
     # (sinon on enverrait "claude-opus-4-6" à GPT/Gemini/Grok → crash Board cloud)
     user_model = None
     try:
-        from app.config import settings
-        from sqlalchemy import create_engine, text
+        from app.models.database import get_sync_connection
+        from sqlalchemy import text
 
-        engine = create_engine(f"sqlite:///{settings.db_path}")
-        with engine.connect() as conn:
+        with get_sync_connection() as conn:
             # Lire le provider principal de l'utilisateur
             prov_row = conn.execute(
                 text("SELECT value FROM preferences WHERE key = 'llm_provider'"),
@@ -697,7 +692,7 @@ def _table_block_to_bullets(table_lines: list[str]) -> str:
         if headers and len(headers) == len(cells):
             # Format « Clé : valeur » pour chaque colonne non vide
             parts = [
-                f"{h} : {v}" for h, v in zip(headers, cells) if v
+                f"{h} : {v}" for h, v in zip(headers, cells, strict=True) if v
             ]
             result_parts.append("- " + " | ".join(parts))
         elif len(cells) == 1:

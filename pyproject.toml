@@ -77,9 +77,15 @@ target-version = "py311"
 exclude = ["src/backend/alembic/versions/"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I"]
+select = ["E", "F", "W", "I", "B", "C90", "SIM"]
 ignore = [
-    "E501",   # Longueur de ligne (géré au cas par cas)
+    "E501",   # Longueur de ligne (gere au cas par cas)
+    "B008",   # Depends() dans args par defaut = pattern standard FastAPI
+    "B904",   # raise from - a traiter progressivement
+    "C901",   # Complexite - a traiter progressivement
+    "SIM105", # contextlib.suppress - preference equipe
+    "SIM108", # ternary operator - if/else souvent plus lisible
+    "SIM102", # combined if - nested ifs parfois plus lisibles
 ]
 
 [tool.pytest.ini_options]

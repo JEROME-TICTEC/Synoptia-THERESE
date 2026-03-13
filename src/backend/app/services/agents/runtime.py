@@ -44,6 +44,12 @@ def _get_llm_for_model(model_id: str):
         "mistral-": "mistral",
     }
 
+    # Modèles OpenRouter (contiennent "/" comme nvidia/nemotron-3-super-120b-a12b)
+    if "/" in model_id:
+        svc = get_llm_service_for_provider("openrouter", model_override=model_id)
+        if svc:
+            return svc
+
     # Modèles locaux Ollama (contiennent ":" comme qwen3:32b)
     if ":" in model_id:
         svc = get_llm_service_for_provider("ollama", model_override=model_id)

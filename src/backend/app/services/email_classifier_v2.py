@@ -278,10 +278,9 @@ class EmailClassifierV2:
         # ============================================================
 
         # Pièces jointes (souvent important)
-        if has_attachments:
-            if category in ["business", "administrative", "transactional"]:
-                score += 10
-                signals['attachments'] = True
+        if has_attachments and category in ["business", "administrative", "transactional"]:
+            score += 10
+            signals['attachments'] = True
 
         # Label Gmail IMPORTANT
         if 'IMPORTANT' in labels:

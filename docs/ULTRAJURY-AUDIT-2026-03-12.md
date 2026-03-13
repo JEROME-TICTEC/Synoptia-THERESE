@@ -138,6 +138,27 @@ Objectif : 90+/100 (production-ready)
 
 ---
 
+## P4 - THERESE Serveur (vision produit)
+
+Objectif : passer de l'app desktop solo a une architecture client-serveur pour les entreprises.
+
+| # | Recommandation | Impact | Effort | Description |
+|---|---------------|--------|--------|-------------|
+| 34 | **THERESE Serveur** : backend centralise deploye par un DSI/admin | Tres haut | Tres eleve | Le serveur heberge les modeles LLM (Mistral, Ollama, etc.) et distribue les fonctionnalites aux clients web |
+| 35 | **Console admin** : interface d'administration pour le DSI | Haut | Eleve | Gestion des modeles autorises, quotas par service/utilisateur, activation/desactivation de modules |
+| 36 | **Client web leger** : webapp connectee au serveur central | Haut | Eleve | Meme UX que le desktop mais sans backend local - le serveur fournit tout |
+| 37 | **Politique modeles** : un admin choisit quels modeles sont disponibles | Haut | Moyen | Ex: "Mistral uniquement" ou "modeles locaux only" - les users n'ont pas acces aux cles API |
+| 38 | **Multi-tenant** : isolation des donnees par service/equipe | Haut | Eleve | Chaque service a ses contacts, conversations, projets - l'admin voit tout |
+
+**Scenario type** : Un DSI installe THERESE Serveur sur un serveur interne. Il configure Mistral
+comme seul modele autorise (souverainete). Il active les modules Chat, CRM et Email pour le service
+commercial, et Chat + Skills pour le service technique. Chaque collaborateur accede a THERESE via
+son navigateur, sans rien installer. Les donnees restent sur le serveur de l'entreprise.
+
+**Prochaine etape** : rediger un PRD "THERESE Serveur" avec architecture, API, auth multi-users, et wireframes admin.
+
+---
+
 ## Problemes critiques identifies (resolus)
 
 1. `/api/shutdown` sans auth -> PR #39
