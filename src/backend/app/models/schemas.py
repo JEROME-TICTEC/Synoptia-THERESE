@@ -695,6 +695,7 @@ class InvoiceResponse(BaseModel):
     contact_id: str
     document_type: str = "facture"  # devis, facture, avoir
     tva_applicable: bool = True
+    currency: Literal["EUR", "CHF", "USD", "GBP"] = "EUR"
     issue_date: str  # ISO datetime
     due_date: str  # ISO datetime
     status: str  # draft, sent, paid, overdue, cancelled
@@ -723,6 +724,7 @@ class CreateInvoiceRequest(BaseModel):
     contact_id: str
     document_type: str = "facture"  # devis, facture, avoir
     tva_applicable: bool = True
+    currency: Literal["EUR", "CHF", "USD", "GBP"] = "EUR"
     issue_date: str | None = None  # ISO datetime, default today
     due_date: str | None = None  # ISO datetime, default +30 days
     lines: list[InvoiceLineRequest]
@@ -733,6 +735,7 @@ class UpdateInvoiceRequest(BaseModel):
     """Request pour modifier une facture."""
 
     contact_id: str | None = None
+    currency: Literal["EUR", "CHF", "USD", "GBP"] | None = None
     issue_date: str | None = None
     due_date: str | None = None
     status: str | None = None
