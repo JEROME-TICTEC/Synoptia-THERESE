@@ -12,7 +12,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0-blue.svg" alt="AGPL-3.0 License" /></a>
   <a href="https://github.com/ludovicsanchez38-creator/Synoptia-THERESE/actions"><img src="https://img.shields.io/github/actions/workflow/status/ludovicsanchez38-creator/Synoptia-THERESE/ci.yml?branch=main&label=CI" alt="CI" /></a>
-  <img src="https://img.shields.io/badge/version-0.6.2--alpha-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.7.0--alpha-orange" alt="Version" />
 </p>
 
 <p align="center">
@@ -23,25 +23,26 @@
 
 ## Fonctionnalités
 
-- **Chat multi-LLM** - Claude, GPT, Gemini, Mistral, Grok, Ollama (100% local)
+- **Chat multi-LLM** - Claude, GPT, Gemini, Mistral, Grok, Infomaniak AI, Ollama (local)
 - **Mémoire persistante** - Contacts, projets, fichiers : tout reste sur ta machine
 - **Email et Calendrier** - IMAP/Gmail, CalDAV/Google Calendar intégrés
-- **CRM et Facturation** - Local ou sync Google Sheets, PDF conforme (mentions légales FR)
+- **CRM et Facturation** - Local ou sync Google Sheets, PDF conforme, devises EUR/CHF/USD/GBP
 - **Board de Décision IA** - 5 conseillers virtuels pour t'aider à trancher
 - **18 skills intégrés** - Word, Excel, PowerPoint, emails pro, posts LinkedIn, propositions commerciales, analyses PDF/web, planification projets/semaine/objectifs
-- **Recherche web** - Brave Search intégré
+- **Recherche web** - Brave Search, SearXNG (auto-hébergeable) ou DuckDuckGo
 - **Dictée vocale** - Parle, THÉRÈSE écrit
-- **Local-first** - Données chiffrées sur ta machine, rien dans le cloud
+- **Données locales** - Ton contexte stocké et chiffré sur ta machine. Les réponses passent par le provider IA de ton choix.
 - **Atelier IA (v0.5)** - Deux agents embarqués qui améliorent l'app pour toi (voir ci-dessous)
+- **THERESE.md** - Fichier de contexte personnel éditable depuis les Paramètres
 
 ## Atelier - Agents IA Embarqués (v0.5)
 
 THÉRÈSE embarque deux agents IA open source qui travaillent ensemble :
 
-- **Thérèse bot** (PM/Guide) : t'aide à comprendre l'app, traduit tes besoins en spécifications
-- **Zézette bot** (Dev) : implémente les changements sur une branche git, lance les tests
+- **Katia** (PM/Guide) : t'aide à comprendre l'app, traduit tes besoins en spécifications
+- **Zézette** (Dev) : implémente les changements sur une branche git, lance les tests
 
-**Comment ça marche** : tu décris ce que tu veux dans l'Atelier (`Cmd+Shift+A`), Thérèse comprend le besoin, Zézette code, et tu valides les changements avant qu'ils soient appliqués. Pas besoin de savoir coder.
+**Comment ça marche** : tu décris ce que tu veux dans l'Atelier (`Cmd+Shift+A`), Katia comprend le besoin, Zézette code, et tu valides les changements avant qu'ils soient appliqués. Pas besoin de savoir coder.
 
 **Open source** : les prompts des agents (`SOUL.md`) sont livrés avec le code. Tu peux les personnaliser dans `~/.therese/agents/`. Tu fournis ta propre clé API (BYOK), on ne livre aucun token.
 
@@ -74,7 +75,7 @@ Guide complet pour les testeurs : [docs/USER_GUIDE_ALPHA.md](docs/USER_GUIDE_ALP
 
 ## Signaler un bug
 
-- **Discord** : mentionne `@Thérèse bug : [description]` dans `#bugs`
+- **Discord** : mentionne `@Katia bug : [description]` dans `#bugs`
 - **GitHub** : ouvre une [issue](https://github.com/ludovicsanchez38-creator/Synoptia-THERESE/issues/new?template=bug_report.md)
 - **Email** : ludo@synoptia.fr avec l'objet `[THÉRÈSE Alpha] Bug`
 
@@ -114,7 +115,8 @@ Installation depuis les sources : [docs/GETTING_STARTED.md](docs/GETTING_STARTED
 | Frontend | React 19, TypeScript 5, TailwindCSS 4, Zustand 5 |
 | Backend | Python 3.11+, FastAPI, SQLModel, SQLite |
 | Mémoire | Qdrant (vecteurs), sentence-transformers (embeddings) |
-| LLM | Anthropic, OpenAI, Google, Mistral, Grok, Ollama |
+| LLM | Anthropic, OpenAI, Google, Mistral, Grok, Infomaniak, DeepSeek, Ollama |
+| Recherche web | Brave Search, SearXNG, DuckDuckGo |
 
 ## Structure du projet
 
@@ -126,7 +128,7 @@ Synoptia-THERESE/
 │   │   └── src-tauri/      # Configuration Rust (Tauri)
 │   └── backend/            # Python FastAPI
 │       └── app/            # Routers, services, models, providers
-│           └── agents/     # Configs Thérèse bot + Zézette bot (SOUL.md)
+│           └── agents/     # Configs Katia (PM/Guide) + Zézette (Dev) (SOUL.md)
 ├── tests/                  # pytest + Vitest + Playwright
 ├── docs/                   # Documentation complète
 ├── scripts/                # Scripts de build et utilitaires
