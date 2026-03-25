@@ -273,8 +273,9 @@ async def set_api_key(
 
     # Invalider le cache des cles API pour forcer un rechargement (SEC-005)
     # Les cles sont lues depuis la DB, plus stockees dans os.environ
-    from app.services.llm import invalidate_api_key_cache
+    from app.services.llm import invalidate_api_key_cache, load_api_key_cache
     invalidate_api_key_cache()
+    await load_api_key_cache()
 
     # Reset LLM service to pick up new config
     import app.services.llm as _llm_mod
@@ -909,15 +910,43 @@ async def get_llm_config(session: AsyncSession = Depends(get_session)):
             "grok-3-beta",                  # Previous gen
         ]
     elif config.provider.value == "openrouter":
-        # OpenRouter : accès unifié à 200+ modèles
-        available_models = [
-            "anthropic/claude-sonnet-4-6",     # Recommandé
-            "anthropic/claude-opus-4-6",       # Premium
-            "openai/gpt-5.2",                  # GPT-5.2
-            "google/gemini-3.1-pro",             # Gemini 3.1 Pro
-            "google/gemini-3.1-flash-lite-preview",  # Ultra-rapide
-            "meta-llama/llama-4-maverick",     # Open Source
+        # OpenRouter : fetch dynamique des modèles disponibles
+        fallback_models = [
+            "anthropic/claude-sonnet-4-6",
+            "anthropic/claude-opus-4-6",
+            "openai/gpt-5.2",
+            "google/gemini-3.1-pro",
+            "google/gemini-3.1-flash-lite-preview",
+            "meta-llama/llama-4-maverick",
         ]
+        try:
+            from app.services.llm import _get_api_key_from_db
+            or_key = await _get_api_key_from_db("openrouter") or os.environ.get("OPENROUTER_API_KEY", "")
+            if or_key:
+                client = await get_http_client()
+                resp = await client.get(
+                    "https://openrouter.ai/api/v1/models",
+                    headers={"Authorization": f"Bearer {or_key}"},
+                    timeout=10.0,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    models = [m["id"] for m in data.get("data", []) if m.get("id")]
+                    # Trier : providers connus en premier, puis alphabétique
+                    priority_prefixes = ["anthropic/", "openai/", "google/", "meta-llama/", "mistralai/"]
+                    def sort_key(m):
+                        for i, p in enumerate(priority_prefixes):
+                            if m.startswith(p):
+                                return (i, m)
+                        return (len(priority_prefixes), m)
+                    available_models = sorted(models, key=sort_key)[:50]  # Max 50
+                else:
+                    available_models = fallback_models
+            else:
+                available_models = fallback_models
+        except Exception as e:
+            logger.warning(f"Failed to fetch OpenRouter models: {e}")
+            available_models = fallback_models
     elif config.provider.value == "ollama":
         # F-14 : lister les modèles Ollama installés localement
         try:

@@ -34,9 +34,11 @@ AVAILABLE_MODELS = [
     {"id": "mistral-large-latest", "name": "Mistral Large 3", "provider": "mistral"},
     {"id": "mistral-large-2512", "name": "Mistral Large 3 (fixé)", "provider": "mistral"},
     {"id": "mistral-small-latest", "name": "Mistral Small 3", "provider": "mistral"},
-    # OpenRouter (NVIDIA Nemotron 3)
-    {"id": "nvidia/nemotron-3-super-120b-a12b", "name": "Nemotron 3 Super 120B", "provider": "openrouter"},
-    {"id": "nvidia/nemotron-3-nano-30b-a3b", "name": "Nemotron 3 Nano 30B", "provider": "openrouter"},
+    # OpenRouter (fallback statique - le sélecteur principal fetch dynamiquement)
+    {"id": "anthropic/claude-sonnet-4-6", "name": "Claude Sonnet 4.6 (OR)", "provider": "openrouter"},
+    {"id": "openai/gpt-5.2", "name": "GPT-5.2 (OR)", "provider": "openrouter"},
+    {"id": "google/gemini-3.1-pro", "name": "Gemini 3.1 Pro (OR)", "provider": "openrouter"},
+    {"id": "meta-llama/llama-4-maverick", "name": "Llama 4 Maverick (OR)", "provider": "openrouter"},
     # DeepSeek
     {"id": "deepseek-chat", "name": "DeepSeek Chat", "provider": "deepseek"},
     # Local (Ollama)

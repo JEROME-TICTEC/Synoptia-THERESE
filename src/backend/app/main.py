@@ -160,6 +160,11 @@ async def lifespan(app: FastAPI):
         # Load Brave Search API key into cache if configured
         await _load_brave_key()
 
+        # Load API key cache (pour que les agents partagent les clés)
+        from app.services.llm import load_api_key_cache
+        await load_api_key_cache()
+        logger.info("API key cache loaded")
+
         # Initialize command registry (V3 unified commands)
         from app.services.command_registry import init_command_registry
         await init_command_registry()
