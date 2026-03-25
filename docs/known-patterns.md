@@ -84,3 +84,14 @@
 - Backend accepte 4 statuts via `VALID_PROJECT_STATUSES`
 - Les projets existants "cancelled" apparaissent sans statut visible dans le formulaire d'édition
 - À harmoniser : soit garder "cancelled" dans le modal, soit le retirer du Kanban + migration
+
+### Dual state décimaux InvoiceForm (v0.7.4 - ACCEPTÉ)
+- `lineInputs` (string[]) pour l'affichage + `lines` (InvoiceLineRequest[]) pour les données
+- Les valeurs numériques dans `lines[i].quantity` ne sont jamais mises à jour lors de la saisie
+- La normalisation se fait à la soumission via `parseDecimalDraft()`
+- **Ne pas bloquer** : pattern fonctionnel mais fragile. Ne pas lire `lines[i].quantity` directement
+
+### alert() dans les formulaires (v0.7.4 - DETTE)
+- 6 occurrences de `alert()` dans `InvoiceForm.tsx`
+- Anti-pattern dans WebView Tauri (bloque le thread, style natif non dark mode)
+- **Ne pas bloquer** : acceptable en alpha, à remplacer par validation inline
