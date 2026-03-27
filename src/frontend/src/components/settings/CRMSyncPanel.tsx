@@ -89,7 +89,7 @@ export function CRMSyncPanel({ onSyncComplete }: CRMSyncPanelProps) {
 
   const handleSaveSpreadsheetId = async () => {
     if (!spreadsheetId.trim()) {
-      setError('Veuillez entrer un ID de spreadsheet');
+      setError('Entre un ID de spreadsheet');
       return;
     }
 
@@ -342,7 +342,7 @@ export function CRMSyncPanel({ onSyncComplete }: CRMSyncPanelProps) {
             <div>
               <h4 className="text-sm font-medium text-text">Credentials Google OAuth</h4>
               <p className="text-xs text-text-muted mt-1">
-                Créez un projet sur{' '}
+                Crée un projet sur{' '}
                 <a
                   href="https://console.cloud.google.com/apis/credentials"
                   target="_blank"

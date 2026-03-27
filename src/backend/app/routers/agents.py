@@ -59,8 +59,8 @@ def _get_source_path() -> str | None:
                 p = Path(row[0])
                 if p.exists() and (p / ".git").exists():
                     return str(p)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Agent config non disponible: %s", e)
 
     # 2. Variable d'environnement explicite
     env_path = os.environ.get("THERESE_SOURCE_PATH")
@@ -516,14 +516,14 @@ async def get_status(
         from app.services.agents.config import load_agent_config
         load_agent_config("katia")
         katia_ready = True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Agent config non disponible: %s", e)
     try:
         from app.services.agents.config import load_agent_config
         load_agent_config("zezette")
         zezette_ready = True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Agent config non disponible: %s", e)
 
     return AgentStatusResponse(
         git_available=git_available,

@@ -40,7 +40,7 @@ export function AgentInput({ onSend, onCancel, isStreaming, placeholder }: Props
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder || 'Décrivez ce que vous voulez...'}
+        placeholder={placeholder || 'Décris ce que tu veux...'}
         disabled={isStreaming}
         rows={1}
         className="flex-1 resize-none rounded-lg border border-white/10 bg-[#131B35] px-3 py-2 text-sm text-[#E6EDF7] placeholder-[#6B7280] outline-none transition focus:border-purple-500/50 disabled:opacity-50"

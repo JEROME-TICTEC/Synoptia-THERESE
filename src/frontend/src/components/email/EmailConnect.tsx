@@ -23,7 +23,7 @@ export function EmailConnect({ onSuccess }: EmailConnectProps) {
 
   async function handleConnect() {
     if (!clientId.trim() || !clientSecret.trim()) {
-      setError('Veuillez renseigner les deux champs');
+      setError('Renseigne les deux champs');
       return;
     }
 
@@ -65,7 +65,7 @@ export function EmailConnect({ onSuccess }: EmailConnectProps) {
           </div>
           <h3 className="text-2xl font-semibold text-text">Connecter Gmail</h3>
           <p className="text-text-muted">
-            Pour accéder à vos emails, THÉRÈSE a besoin d'un accès OAuth à votre compte Gmail.
+            Pour accéder à tes emails, THÉRÈSE a besoin d'un accès OAuth à ton compte Gmail.
           </p>
         </div>
 
@@ -127,7 +127,7 @@ export function EmailConnect({ onSuccess }: EmailConnectProps) {
           {authUrl && (
             <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
               <p className="text-sm text-green-400">
-                Fenêtre d'autorisation ouverte. Suivez les instructions.
+                Fenêtre d'autorisation ouverte. Suis les instructions.
               </p>
             </div>
           )}
@@ -155,7 +155,7 @@ export function EmailConnect({ onSuccess }: EmailConnectProps) {
 
         {/* Note */}
         <p className="text-xs text-text-muted text-center">
-          Vos identifiants OAuth sont stockés localement et chiffrés.
+          Tes identifiants OAuth sont stockés localement et chiffrés.
           <br />
           THÉRÈSE ne les transmet jamais à des tiers.
         </p>

@@ -57,7 +57,8 @@ def _validate_url(url: str) -> str | None:
 
     try:
         parsed = urlparse(url)
-    except Exception:
+    except (ValueError, TypeError) as e:
+        logger.debug("URL invalide: %s", e)
         return f"URL invalide : {url}"
 
     if not parsed.scheme:

@@ -51,7 +51,7 @@ export function TaskForm() {
 
   async function handleSave() {
     if (!title.trim()) {
-      setError('Veuillez ajouter un titre');
+      setError('Ajoute un titre');
       return;
     }
 

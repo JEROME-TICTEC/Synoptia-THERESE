@@ -269,7 +269,7 @@ export function ProjectModal({ isOpen, onClose, onSaved, project }: ProjectModal
                     {isEditing ? 'Modifier le projet' : 'Nouveau projet'}
                   </h2>
                   <p className="text-xs text-text-muted">
-                    {isEditing ? 'Modifiez les informations du projet' : 'Créez un nouveau projet'}
+                    {isEditing ? 'Modifie les informations du projet' : 'Crée un nouveau projet'}
                   </p>
                 </div>
               </div>

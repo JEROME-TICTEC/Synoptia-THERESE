@@ -200,7 +200,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   async function handleSaveApiKey() {
     if (!apiKeyInput.trim()) {
-      setError('Veuillez entrer une clé API');
+      setError('Entre une clé API');
       return;
     }
 
@@ -229,7 +229,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   async function handleSaveGroqKey() {
     if (!groqKeyInput.trim()) {
-      setError('Veuillez entrer une clé API Groq');
+      setError('Entre une clé API Groq');
       return;
     }
     if (!groqKeyInput.startsWith('gsk_')) {
@@ -255,7 +255,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   async function handleSaveBraveKey() {
     if (!braveKeyInput.trim()) {
-      setError('Veuillez entrer une clé API Brave Search');
+      setError('Entre une clé API Brave Search');
       return;
     }
 
@@ -278,7 +278,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   async function handleSaveImageKey(apiKeyId: 'openai_image' | 'gemini_image' | 'fal') {
     const keyInput = imageKeyInputs[apiKeyId] || '';
     if (!keyInput.trim()) {
-      setError('Veuillez entrer une clé API');
+      setError('Entre une clé API');
       return;
     }
 

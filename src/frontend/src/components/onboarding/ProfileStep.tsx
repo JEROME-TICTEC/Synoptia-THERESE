@@ -131,7 +131,7 @@ export function ProfileStep({ onNext, onBack }: ProfileStepProps) {
                 setProfileForm((prev) => ({ ...prev, name: e.target.value }));
                 setError(null);
               }}
-              placeholder="Votre nom complet"
+              placeholder="Ton nom complet"
               className="w-full px-3 py-2.5 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent-cyan"
             />
           </div>
@@ -142,7 +142,7 @@ export function ProfileStep({ onNext, onBack }: ProfileStepProps) {
               type="text"
               value={profileForm.nickname}
               onChange={(e) => setProfileForm((prev) => ({ ...prev, nickname: e.target.value }))}
-              placeholder="Votre surnom"
+              placeholder="Ton surnom"
               className="w-full px-3 py-2.5 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent-cyan"
             />
           </div>
@@ -156,7 +156,7 @@ export function ProfileStep({ onNext, onBack }: ProfileStepProps) {
               type="text"
               value={profileForm.company}
               onChange={(e) => setProfileForm((prev) => ({ ...prev, company: e.target.value }))}
-              placeholder="Votre entreprise"
+              placeholder="Ton entreprise"
               className="w-full px-3 py-2.5 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent-cyan"
             />
           </div>
@@ -167,7 +167,7 @@ export function ProfileStep({ onNext, onBack }: ProfileStepProps) {
               type="text"
               value={profileForm.role}
               onChange={(e) => setProfileForm((prev) => ({ ...prev, role: e.target.value }))}
-              placeholder="Votre rôle"
+              placeholder="Ton rôle"
               className="w-full px-3 py-2.5 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent-cyan"
             />
           </div>
@@ -181,7 +181,7 @@ export function ProfileStep({ onNext, onBack }: ProfileStepProps) {
               type="email"
               value={profileForm.email}
               onChange={(e) => setProfileForm((prev) => ({ ...prev, email: e.target.value }))}
-              placeholder="votre@email.com"
+              placeholder="ton@email.com"
               className="w-full px-3 py-2.5 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent-cyan"
             />
           </div>
@@ -192,7 +192,7 @@ export function ProfileStep({ onNext, onBack }: ProfileStepProps) {
               type="text"
               value={profileForm.location}
               onChange={(e) => setProfileForm((prev) => ({ ...prev, location: e.target.value }))}
-              placeholder="Votre ville"
+              placeholder="Ta ville"
               className="w-full px-3 py-2.5 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent-cyan"
             />
           </div>

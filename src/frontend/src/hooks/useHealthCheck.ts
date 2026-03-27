@@ -68,8 +68,8 @@ export function useHealthCheck(enabled: boolean = true) {
     } else {
       addNotification({
         type: 'error',
-        title: 'Backend unreachable',
-        message: 'Could not connect after multiple attempts',
+        title: 'Backend injoignable',
+        message: 'Impossible de se connecter après plusieurs tentatives',
       });
     }
   }, [performCheck, addNotification]);

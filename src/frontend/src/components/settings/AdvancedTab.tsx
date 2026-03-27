@@ -64,7 +64,7 @@ export function AdvancedTab({
             </div>
             <div>
               <p className="text-xs text-text-muted">
-                Vos données sont stockées localement sur votre machine
+                Tes données sont stockées localement sur ta machine
               </p>
             </div>
           </div>

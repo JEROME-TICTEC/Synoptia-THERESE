@@ -39,7 +39,8 @@ def _try_keyring_available() -> bool:
         backend = keyring.get_keyring()
         # Exclude fail backend
         return "fail" not in backend.__class__.__name__.lower()
-    except Exception:
+    except Exception as e:
+        logger.debug("Keyring non disponible: %s", e)
         return False
 
 
@@ -326,7 +327,8 @@ class EncryptionService:
         try:
             decoded = base64.urlsafe_b64decode(value.encode("utf-8"))
             return decoded.startswith(b"gAAAAA") or len(decoded) > 50
-        except Exception:
+        except Exception as e:
+            logger.debug("Valeur non dechiffrable (base64): %s", e)
             return False
 
     def rotate_key(self) -> bytes | None:

@@ -195,7 +195,7 @@ export function AgentsTab() {
           Chemin du code source
         </h4>
         <p className="text-xs text-text-muted mb-3">
-          Chemin local vers votre clone/fork du repo THÉRÈSE.
+          Chemin local vers ton clone/fork du repo THÉRÈSE.
         </p>
         <input
           type="text"

@@ -31,7 +31,7 @@ export function DataTab({
           <div>
             <h3 className="font-medium text-text">Stockage des données</h3>
             <p className="text-xs text-text-muted">
-              Vos données sont stockées localement sur votre machine
+              Tes données sont stockées localement sur ta machine
             </p>
           </div>
         </div>

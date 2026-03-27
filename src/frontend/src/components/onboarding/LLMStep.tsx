@@ -134,7 +134,7 @@ const PROVIDERS: ProviderConfig[] = [
     id: 'infomaniak',
     name: 'Infomaniak AI',
     description: 'IA suisse souveraine - serveurs en Suisse',
-    keyPlaceholder: 'Votre token API Infomaniak...',
+    keyPlaceholder: 'Ton token API Infomaniak...',
     consoleUrl: 'https://www.infomaniak.com/fr/hebergement/ai-tools',
     models: [
       { id: 'mix', name: 'Mix', badge: 'Polyvalent' },
@@ -196,7 +196,7 @@ export function LLMStep({ onNext, onBack }: LLMStepProps) {
 
   async function handleSaveApiKey() {
     if (!apiKeyInput.trim()) {
-      setError('Veuillez entrer une clé API');
+      setError('Entre une clé API');
       return;
     }
 
@@ -395,7 +395,7 @@ export function LLMStep({ onNext, onBack }: LLMStepProps) {
 
               {currentProviderConfig?.consoleUrl && (
                 <p className="text-xs text-text-muted">
-                  Obtenez votre clé sur{' '}
+                  Obtiens ta clé sur{' '}
                   <a
                     href={currentProviderConfig.consoleUrl}
                     target="_blank"

@@ -26,7 +26,7 @@ const AGENT_STYLES: Record<string, { color: string; bg: string; icon: React.Reac
     color: '#22D3EE',
     bg: 'rgba(34, 211, 238, 0.1)',
     icon: <User size={14} />,
-    label: 'Vous',
+    label: 'Toi',
   },
   system: {
     color: '#6B7280',

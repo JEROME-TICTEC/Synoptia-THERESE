@@ -82,17 +82,17 @@ export function EventForm() {
     if (!currentAccountId || !currentCalendarId) return;
 
     if (!summary.trim()) {
-      setError('Veuillez ajouter un titre');
+      setError('Ajoute un titre');
       return;
     }
 
     if (!startDate || (!allDay && !startTime)) {
-      setError('Veuillez définir la date et heure de début');
+      setError('Définis la date et heure de début');
       return;
     }
 
     if (!endDate || (!allDay && !endTime)) {
-      setError('Veuillez définir la date et heure de fin');
+      setError('Définis la date et heure de fin');
       return;
     }
 

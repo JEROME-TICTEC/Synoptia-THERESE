@@ -111,8 +111,8 @@ def _resolve_agents_dir() -> Path:
                 conn.close()
                 if row and row[0]:
                     source_path = row[0]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Impossible de lire agent_source_path depuis DB: %s", e)
 
     if not source_path:
         # Emplacements connus

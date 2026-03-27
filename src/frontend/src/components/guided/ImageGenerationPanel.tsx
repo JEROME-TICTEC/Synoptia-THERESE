@@ -179,7 +179,7 @@ export function ImageGenerationPanel({
             {status === 'generating' && (
               <span className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                {config.label} crée votre image
+                {config.label} crée ton image
               </span>
             )}
             {status === 'success' && config.description}

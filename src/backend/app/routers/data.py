@@ -377,7 +377,7 @@ async def delete_all_data(
         qdrant = get_qdrant_service()
         if qdrant.client:
             qdrant.client.delete_collection(settings.qdrant_collection)
-    except Exception:
+    except Exception as e:
         logger.warning("Impossible de purger la collection Qdrant")
 
     logger.warning("Toutes les donnees utilisateur ont ete supprimees (RGPD)")
@@ -580,7 +580,8 @@ async def list_backups():
                 metadata["exists"] = False
 
             backups.append(metadata)
-        except Exception:
+        except Exception as e:
+            logger.debug("Erreur lecture metadata backup: %s", e)
             continue
 
     # Sort by date, most recent first
@@ -819,7 +820,8 @@ async def get_backup_status():
             if latest_time is None or created > latest_time:
                 latest_time = created
                 latest = metadata
-        except Exception:
+        except Exception as e:
+            logger.debug("Erreur lecture metadata backup: %s", e)
             continue
 
     if not latest:

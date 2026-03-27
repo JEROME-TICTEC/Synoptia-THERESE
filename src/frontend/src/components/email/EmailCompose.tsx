@@ -45,12 +45,12 @@ export function EmailCompose() {
       .filter((r) => r);
 
     if (recipients.length === 0) {
-      setError('Veuillez ajouter au moins un destinataire');
+      setError('Ajoute au moins un destinataire');
       return;
     }
 
     if (!draftSubject.trim()) {
-      setError('Veuillez ajouter un objet');
+      setError('Ajoute un objet');
       return;
     }
 
@@ -84,7 +84,7 @@ export function EmailCompose() {
       .filter((r) => r);
 
     if (recipients.length === 0 || !draftSubject.trim()) {
-      setError('Veuillez remplir au moins le destinataire et l\'objet');
+      setError('Remplis au moins le destinataire et l\'objet');
       return;
     }
 
@@ -173,7 +173,7 @@ export function EmailCompose() {
           <textarea
             value={draftBody}
             onChange={(e) => setDraftBody(e.target.value)}
-            placeholder="Écrivez votre message..."
+            placeholder="Écris ton message..."
             className="w-full h-full px-6 py-4 bg-transparent text-sm text-text placeholder:text-text-muted/50 resize-none focus:outline-none"
           />
         </div>

@@ -574,7 +574,7 @@ async def ensure_valid_crm_token(session: AsyncSession) -> str | None:
 
     try:
         refresh_token = decrypt_value(refresh_pref.value)
-    except Exception:
+    except Exception as e:
         logger.error("Impossible de déchiffrer le refresh token CRM")
         return access_token
 
@@ -598,8 +598,8 @@ async def ensure_valid_crm_token(session: AsyncSession) -> str | None:
                     client_id = val
                 else:
                     client_secret = val
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Echec dechiffrement credential CRM: %s", e)
 
     # 2. Fallback: EmailAccount Gmail credentials
     if not client_id or not client_secret:
@@ -617,8 +617,8 @@ async def ensure_valid_crm_token(session: AsyncSession) -> str | None:
             try:
                 client_id = decrypt_value(email_account.client_id)
                 client_secret = decrypt_value(email_account.client_secret)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Echec dechiffrement credential CRM: %s", e)
 
     if not client_id or not client_secret:
         logger.warning("Pas de credentials OAuth pour refresh CRM token")

@@ -183,7 +183,7 @@ export function ServicesTab({
                   )}
 
                   <p className="text-xs text-text-muted">
-                    Obtenez votre clé sur{' '}
+                    Obtiens ta clé sur{' '}
                     <a href={provider.consoleUrl} target="_blank" rel="noopener noreferrer" className="text-accent-cyan hover:underline">
                       {new URL(provider.consoleUrl).hostname}
                     </a>
@@ -262,7 +262,7 @@ export function ServicesTab({
           )}
 
           <p className="text-xs text-text-muted">
-            Obtenez votre clé sur{' '}
+            Obtiens ta clé sur{' '}
             <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-accent-cyan hover:underline">
               console.groq.com
             </a>

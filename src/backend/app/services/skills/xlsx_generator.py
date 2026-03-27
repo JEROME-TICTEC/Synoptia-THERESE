@@ -351,8 +351,8 @@ NE génère PAS de code Python. Écris directement les tableaux de données.
                     if cell.value:
                         cell_length = len(str(cell.value))
                         max_length = max(max_length, cell_length)
-                except Exception:
-                    pass
+                except Exception as e:  # noqa: BLE001
+                    logger.debug("Erreur calcul largeur cellule: %s", e)
 
             # Limiter entre 10 et 50 caractères
             adjusted_width = min(max(max_length + 2, 10), 50)

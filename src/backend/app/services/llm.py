@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import AsyncGenerator
 
+from app.services.circuit_breaker import CircuitState, get_circuit_breaker
 from app.services.context import ContextWindow
 
 # Re-export types for backward compatibility
@@ -70,7 +71,7 @@ async def load_api_key_cache() -> None:
                     if encryption.is_encrypted(value):
                         try:
                             value = encryption.decrypt(value)
-                        except Exception:
+                        except Exception as e:
                             logger.warning(f"Decryption failed for {pref_key}, skipping")
                             continue
                     _api_key_cache[pref_key] = value
@@ -404,6 +405,111 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
             if provider_class:
                 self._provider = provider_class(self.config, client)
 
+    # -----------------------------------------------------------------
+    # US-006 : Circuit breaker - résolution provider avec fallback
+    # -----------------------------------------------------------------
+
+    def _get_fallback_configs(self) -> list["LLMConfig"]:
+        """Retourne la liste ordonnée des configs fallback disponibles.
+
+        Ordre de priorité :
+        1. Provider configuré par l'utilisateur (self.config) - déjà utilisé
+        2. Autres providers avec clé API valide
+        3. Ollama local (toujours disponible en dernier recours)
+        """
+        from app.services.providers import LLMConfig, LLMProvider
+
+        fallback_candidates = [
+            ("anthropic", LLMProvider.ANTHROPIC, "claude-opus-4-6", 200000),
+            ("openai", LLMProvider.OPENAI, "gpt-5.2", 200000),
+            ("gemini", LLMProvider.GEMINI, "gemini-3.1-pro-preview", 1000000),
+            ("mistral", LLMProvider.MISTRAL, "mistral-large-latest", 256000),
+            ("grok", LLMProvider.GROK, "grok-4", 131072),
+            ("openrouter", LLMProvider.OPENROUTER, "anthropic/claude-sonnet-4-6", 200000),
+            ("deepseek", LLMProvider.DEEPSEEK, "deepseek-chat", 128000),
+        ]
+
+        current_provider_name = self.config.provider.value
+        fallbacks = []
+
+        for name, provider_enum, default_model, ctx_window in fallback_candidates:
+            # Ne pas inclure le provider courant
+            if name == current_provider_name:
+                continue
+
+            api_key = _get_api_key_from_db(name)
+            if not api_key:
+                env_map = {
+                    "anthropic": "ANTHROPIC_API_KEY",
+                    "openai": "OPENAI_API_KEY",
+                    "gemini": "GEMINI_API_KEY",
+                    "mistral": "MISTRAL_API_KEY",
+                    "grok": "XAI_API_KEY",
+                    "openrouter": "OPENROUTER_API_KEY",
+                    "deepseek": "DEEPSEEK_API_KEY",
+                }
+                api_key = os.getenv(env_map.get(name, ""))
+
+            if api_key:
+                fallbacks.append(
+                    LLMConfig(
+                        provider=provider_enum,
+                        model=default_model,
+                        api_key=api_key,
+                        context_window=ctx_window,
+                    )
+                )
+
+        # Ollama en dernier recours (pas besoin de clé API)
+        fallbacks.append(
+            LLMConfig(
+                provider=LLMProvider.OLLAMA,
+                model="mistral-nemo",
+                base_url="http://localhost:11434",
+                context_window=32000,
+            )
+        )
+
+        return fallbacks
+
+    def _resolve_with_circuit_breaker(self) -> "LLMConfig":
+        """Résout le provider effectif en tenant compte du circuit breaker.
+
+        Si le provider principal est en circuit ouvert, bascule
+        automatiquement sur le premier fallback disponible.
+
+        Returns:
+            La config LLM à utiliser (principale ou fallback).
+        """
+        cb = get_circuit_breaker()
+        current_name = self.config.provider.value
+
+        if cb.is_available(current_name):
+            return self.config
+
+        # Provider principal indisponible - chercher un fallback
+        logger.warning(
+            "Circuit breaker: provider %s indisponible, recherche de fallback...",
+            current_name,
+        )
+
+        for fallback_config in self._get_fallback_configs():
+            fallback_name = fallback_config.provider.value
+            if cb.is_available(fallback_name):
+                logger.info(
+                    "Circuit breaker: bascule %s -> %s (%s)",
+                    current_name, fallback_name, fallback_config.model,
+                )
+                return fallback_config
+
+        # Aucun fallback disponible - tenter quand même le provider principal
+        logger.error(
+            "Circuit breaker: aucun fallback disponible, "
+            "tentative forcée sur %s",
+            current_name,
+        )
+        return self.config
+
     def prepare_context(
         self,
         messages: list[Message],
@@ -440,25 +546,64 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
         tools: list[dict] | None = None,
         enable_grounding: bool = True,
     ) -> AsyncGenerator[StreamEvent, None]:
-        """Stream response with tool support."""
+        """Stream response with tool support.
+
+        US-006 : Intègre le circuit breaker pour bascule automatique.
+        """
+        # US-006 : Résoudre le provider via le circuit breaker
+        effective_config = self._resolve_with_circuit_breaker()
+        original_config = self.config
+        provider_switched = effective_config is not self.config
+
+        if provider_switched:
+            self.config = effective_config
+            self._provider = None  # Forcer la recréation du provider
+
         await self._ensure_provider()
 
-        # Convert context to provider format
-        if self.config.provider == LLMProvider.ANTHROPIC:
-            system_prompt, messages = context.to_anthropic_format()
-        elif self.config.provider == LLMProvider.GEMINI:
-            system_prompt, messages = context.to_gemini_format()
-        else:
-            messages = context.to_openai_format()
-            system_prompt = context.system_prompt
+        provider_name = self.config.provider.value
+        cb = get_circuit_breaker()
+        had_content = False
 
-        # Pass enable_grounding to Gemini provider
-        if self.config.provider == LLMProvider.GEMINI:
-            async for event in self._provider.stream(system_prompt, messages, tools, enable_grounding=enable_grounding):
-                yield event
-        else:
-            async for event in self._provider.stream(system_prompt, messages, tools):
-                yield event
+        try:
+            # Convert context to provider format
+            if self.config.provider == LLMProvider.ANTHROPIC:
+                system_prompt, messages = context.to_anthropic_format()
+            elif self.config.provider == LLMProvider.GEMINI:
+                system_prompt, messages = context.to_gemini_format()
+            else:
+                messages = context.to_openai_format()
+                system_prompt = context.system_prompt
+
+            # Pass enable_grounding to Gemini provider
+            if self.config.provider == LLMProvider.GEMINI:
+                async for event in self._provider.stream(system_prompt, messages, tools, enable_grounding=enable_grounding):
+                    if event.type == "text" and event.content:
+                        had_content = True
+                    yield event
+            else:
+                async for event in self._provider.stream(system_prompt, messages, tools):
+                    if event.type == "text" and event.content:
+                        had_content = True
+                    yield event
+
+            # Si on a reçu du contenu, le provider fonctionne
+            if had_content:
+                cb.record_success(provider_name)
+
+        except Exception as e:
+            cb.record_failure(provider_name, str(e)[:200])
+            logger.error(
+                "Circuit breaker: échec stream sur %s: %s",
+                provider_name, str(e)[:200],
+            )
+            # Propager l'erreur (le retry est géré par le caller)
+            raise
+        finally:
+            # Restaurer la config originale si on avait basculé
+            if provider_switched:
+                self.config = original_config
+                self._provider = None
 
     async def continue_with_tool_results(
         self,
@@ -519,18 +664,25 @@ AUTORISÉ : les listes à puces (- point clé : valeur).
         ctx = self.prepare_context(messages=messages, system_prompt=effective_system)
         content_parts = []
         errors = []
+        cb = get_circuit_breaker()
+        provider_name = self.config.provider.value
         try:
             async for event in self.stream_response_with_tools(ctx, enable_grounding=False):
                 if event.type == "text" and event.content:
                     content_parts.append(event.content)
                 elif event.type == "error":
                     errors.append(event.content or "Unknown error")
+        except Exception as exc:
+            cb.record_failure(provider_name, str(exc)[:200])
+            raise
         finally:
             self.config = original_config
 
         if not content_parts and errors:
-            raise RuntimeError(f"Erreur LLM lors de la génération : {'; '.join(errors)}")
+            cb.record_failure(provider_name, errors[0][:200])
+            raise RuntimeError("Erreur LLM lors de la génération : " + "; ".join(errors))
 
+        cb.record_success(provider_name)
         return "".join(content_parts)
 
     async def close(self):
@@ -604,8 +756,8 @@ def get_llm_service_for_provider(provider_name: str, model_override: str | None 
                 row = result.fetchone()
                 if row and row[0]:
                     user_model = row[0]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Erreur LLM service (non critique): %s", e)
     model = model_override or user_model or default_model
 
     api_key = None

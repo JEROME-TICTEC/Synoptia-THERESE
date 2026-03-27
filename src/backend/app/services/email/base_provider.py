@@ -325,5 +325,6 @@ class EmailProvider(ABC):
         try:
             await self.get_profile()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning("Test connexion email echoue: %s", e)
             return False

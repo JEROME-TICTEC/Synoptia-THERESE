@@ -134,7 +134,7 @@ export const PROVIDERS: ProviderConfig[] = [
     id: 'infomaniak',
     name: 'Infomaniak AI',
     description: 'IA souveraine suisse - serveurs en Suisse, RGPD',
-    keyPlaceholder: 'Votre token API Infomaniak...',
+    keyPlaceholder: 'Ton token API Infomaniak...',
     consoleUrl: 'https://www.infomaniak.com/fr/hebergement/ai-tools',
     models: [
       { id: 'mix', name: 'Mix', badge: 'Polyvalent' },
@@ -257,7 +257,7 @@ export function LLMTab({
           </div>
           <div>
             <h3 className="font-medium text-text">Fournisseur LLM</h3>
-            <p className="text-xs text-text-muted">Choisissez votre fournisseur d'IA</p>
+            <p className="text-xs text-text-muted">Choisis ton fournisseur d'IA</p>
           </div>
         </div>
 
@@ -336,7 +336,7 @@ export function LLMTab({
           {corruptedKeys.includes(selectedProvider) ? (
             <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-lg">
               <XCircle className="w-4 h-4 text-red-400" />
-              <span className="text-sm text-red-400">Clé API corrompue - veuillez la ressaisir</span>
+              <span className="text-sm text-red-400">Clé API corrompue - ressaisis-la</span>
             </div>
           ) : hasApiKey ? (
             <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
@@ -407,7 +407,7 @@ export function LLMTab({
             {/* Lien d'aide */}
             {currentProviderConfig?.consoleUrl && (
               <p className="text-xs text-text-muted">
-                Obtenez votre clé sur{' '}
+                Obtiens ta clé sur{' '}
                 <a
                   href={currentProviderConfig.consoleUrl}
                   target="_blank"

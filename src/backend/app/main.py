@@ -18,6 +18,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.gzip import GZipMiddleware
 
 # Rate limiting (SEC-015) - slowapi est requis (dans pyproject.toml)
 try:
@@ -63,11 +64,15 @@ from app.services import close_qdrant, init_qdrant
 from app.services.mcp_service import get_mcp_service, initialize_mcp_service
 from app.services.skills import close_skills, init_skills
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG if settings.debug else logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+# Configure structured logging (US-014)
+from app.core.logging_config import setup_logging
+setup_logging()
+
+# Legacy basicConfig remplacé par setup_logging() ci-dessus
+# logging.basicConfig(
+#    level=logging.DEBUG if settings.debug else logging.INFO,
+#    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+#)
 logger = logging.getLogger(__name__)
 
 
@@ -225,8 +230,8 @@ async def lifespan(app: FastAPI):
         token_path = FilePath.home() / ".therese" / ".session_token"
         if token_path.exists():
             token_path.unlink()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Nettoyage non critique echoue: %s", e)
 
     # Close global HTTP client pool (Sprint 2 - PERF-2.6)
     from app.services.http_client import close_http_client
@@ -489,6 +494,11 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],  # Pour le telechargement de fichiers
 )
 
+# GZip compression (US-009 - v0.9.0)
+# Compresse les réponses > 500 octets pour réduire la bande passante.
+# Note : StreamingResponse (SSE) n'est pas compressée par GZipMiddleware.
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
 
 # Include routers
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
@@ -612,7 +622,7 @@ async def service_status():
 
         service = get_qdrant_service()
         service.get_stats()
-    except Exception:
+    except Exception as e:
         qdrant_available = False
 
     status.set_available("qdrant", qdrant_available)
@@ -624,7 +634,7 @@ async def service_status():
 
         async with get_session_context() as session:
             await session.execute("SELECT 1")
-    except Exception:
+    except Exception as e:
         db_available = False
 
     status.set_available("database", db_available)

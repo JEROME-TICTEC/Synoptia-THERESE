@@ -69,7 +69,7 @@ export function CreateCommandForm({ onSubmit, onBack, initialContent, initialDes
         content,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la creation');
+      setError(err instanceof Error ? err.message : 'Erreur lors de la création');
     } finally {
       setIsSubmitting(false);
     }
@@ -92,8 +92,8 @@ export function CreateCommandForm({ onSubmit, onBack, initialContent, initialDes
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h3 className="text-lg font-semibold text-text">Creer une commande</h3>
-          <p className="text-xs text-text-muted">Definis un raccourci personnalise pour THERESE</p>
+          <h3 className="text-lg font-semibold text-text">Créer une commande</h3>
+          <p className="text-xs text-text-muted">Définis un raccourci personnalisé pour THÉRÈSE</p>
         </div>
       </div>
 
@@ -134,7 +134,7 @@ export function CreateCommandForm({ onSubmit, onBack, initialContent, initialDes
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ex: Genere un brief pour un nouveau client"
+            placeholder="Ex : Génère un brief pour un nouveau client"
             className={cn(
               'w-full px-3 py-2 rounded-lg text-sm',
               'bg-surface-elevated border border-border text-text',
@@ -152,11 +152,11 @@ export function CreateCommandForm({ onSubmit, onBack, initialContent, initialDes
           </div>
         )}
 
-        {/* Categorie + Icon */}
+        {/* Catégorie + Icon */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="cmd-category" className="block text-sm font-medium text-text mb-1">
-              Categorie
+              Catégorie
             </label>
             <select
               id="cmd-category"
@@ -177,7 +177,7 @@ export function CreateCommandForm({ onSubmit, onBack, initialContent, initialDes
           </div>
           <div>
             <label htmlFor="cmd-icon" className="block text-sm font-medium text-text mb-1">
-              Icone (emoji)
+              Icône (emoji)
             </label>
             <input
               id="cmd-icon"
@@ -219,7 +219,7 @@ export function CreateCommandForm({ onSubmit, onBack, initialContent, initialDes
             id="cmd-content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Ecris le prompt que THERESE utilisera quand cette commande sera declenchee..."
+            placeholder="Écris le prompt que THÉRÈSE utilisera quand cette commande sera déclenchée..."
             rows={6}
             className={cn(
               'w-full px-3 py-2 rounded-lg text-sm resize-none',

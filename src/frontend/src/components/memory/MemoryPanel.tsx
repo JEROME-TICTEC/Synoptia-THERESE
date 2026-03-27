@@ -95,7 +95,7 @@ export function MemoryPanel({ isOpen, onClose, onNewContact, onEditContact }: Me
 
   async function handleRGPDAnonymize(contact: api.Contact, reason: string) {
     if (!reason.trim()) {
-      alert('Veuillez indiquer la raison de l\'anonymisation');
+      alert('Indique la raison de l\'anonymisation');
       return;
     }
     setRgpdActionLoading(true);

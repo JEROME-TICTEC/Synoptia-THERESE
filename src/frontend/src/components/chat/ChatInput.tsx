@@ -419,12 +419,12 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
         }
 
         const errorMessage = isConversationGhost
-          ? "La conversation n'existait plus sur le serveur. Un nouveau chat a été créé automatiquement. Vous pouvez renvoyer votre message."
+          ? "La conversation n'existait plus sur le serveur. Un nouveau chat a été créé automatiquement. Tu peux renvoyer ton message."
           : error instanceof ApiError
             ? `Erreur serveur (${error.status}): ${error.message}`
             : error instanceof Error
               ? error.message
-              : "Désolée, une erreur s'est produite. Veuillez réessayer.";
+              : "Désolée, une erreur s'est produite. Réessaie.";
 
         // Update the placeholder message with error
         updateMessage(assistantMessageId, errorMessage);
@@ -735,7 +735,7 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
                   ? 'Ajouter un message à la file...'
                   : isOffline
                     ? 'En attente de connexion...'
-                    : 'Comment puis-je vous aider ?'
+                    : 'Comment puis-je t'aider ?'
             }
             disabled={isDisabled}
             rows={MIN_ROWS}

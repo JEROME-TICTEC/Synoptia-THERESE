@@ -90,7 +90,7 @@ export function AdvisorArcLayout({
             {' '}<span className="text-red-400 ml-2">&#9679;</span> &gt; 8 Go (32 Go+ RAM)
           </p>
           <p className="text-[10px] text-text-muted/70">
-            Choisissez des modèles adaptés à votre machine pour éviter les ralentissements
+            Choisis des modèles adaptés à ta machine pour éviter les ralentissements
           </p>
         </motion.div>
       )}
