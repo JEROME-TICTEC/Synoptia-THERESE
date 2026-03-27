@@ -612,7 +612,7 @@ app.include_router(browser_router, prefix="/api/browser", tags=["Browser"])
 
 # US-004 - Notifications push in-app (v0.9.0)
 app.include_router(notifications_router, prefix="/api/notifications", tags=["Notifications"])
-n# US-005 - Dashboard Ma journée (v0.9.0)
+#  US-005 - Dashboard Ma journée (v0.9.0)
 app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"])
 
 

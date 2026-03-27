@@ -417,7 +417,7 @@ async def run_stdio_server() -> None:
 
     reader = asyncio.StreamReader()
     protocol = asyncio.StreamReaderProtocol(reader)
-    await asyncio.get_event_loop().connect_read_pipe(lambda: protocol, sys.stdin.buffer)
+    await asyncio.get_running_loop().connect_read_pipe(lambda: protocol, sys.stdin.buffer)
 
     buffer = ""
     while True:

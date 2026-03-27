@@ -455,33 +455,34 @@ class TestBUG009RustTasklistFallback:
 
 
 class TestScrollStreaming:
-    """Scroll instantané pendant le streaming (pas de smooth qui saccade)."""
+    """Scroll automatique via react-virtuoso pendant le streaming."""
 
-    def test_instant_scroll_during_streaming(self):
-        """MessageList doit utiliser scrollTop direct pendant le streaming."""
+    def test_virtuoso_handles_scroll(self):
+        """MessageList doit utiliser Virtuoso pour gérer le scroll automatique."""
         content = MESSAGE_LIST_TSX.read_text(encoding="utf-8")
-        assert "scrollTop" in content, (
-            "MessageList doit utiliser container.scrollTop pour le scroll instantané"
+        assert "Virtuoso" in content, (
+            "MessageList doit utiliser le composant Virtuoso pour la virtualisation et le scroll"
         )
-        assert "scrollHeight" in content, (
-            "MessageList doit utiliser container.scrollHeight pour le scroll bas"
+        assert "followOutput" in content, (
+            "MessageList doit utiliser followOutput de Virtuoso pour le scroll automatique"
         )
 
     def test_user_scroll_detection(self):
-        """MessageList doit détecter quand l'utilisateur scrolle vers le haut."""
+        """MessageList doit détecter quand l'utilisateur scrolle vers le haut via followOutput."""
         content = MESSAGE_LIST_TSX.read_text(encoding="utf-8")
-        assert "userScrolledUp" in content, (
-            "MessageList doit tracker si l'utilisateur a scrollé vers le haut"
+        # followOutput reçoit isAtBottom : si false, pas de scroll auto (l'utilisateur a scrollé)
+        assert "isAtBottom" in content, (
+            "MessageList doit utiliser isAtBottom (via followOutput) pour détecter le scroll utilisateur"
         )
 
-    def test_smooth_scroll_only_when_not_streaming(self):
-        """scrollIntoView smooth ne doit être utilisé que hors streaming."""
+    def test_smooth_scroll_only_when_at_bottom(self):
+        """followOutput doit retourner 'smooth' quand l'utilisateur est en bas."""
         content = MESSAGE_LIST_TSX.read_text(encoding="utf-8")
         assert "isStreaming" in content, (
-            "MessageList doit conditionner le type de scroll sur isStreaming"
+            "MessageList doit avoir accès à isStreaming pour conditionner le scroll"
         )
-        assert "behavior: 'smooth'" in content, (
-            "MessageList doit garder le smooth scroll pour les messages normaux"
+        assert "'smooth'" in content, (
+            "followOutput doit retourner 'smooth' pour un scroll fluide quand l'utilisateur est en bas"
         )
 
 
@@ -659,20 +660,23 @@ class TestBUG020LazyLoading:
 
 
 class TestBUG021StreamingScroll:
-    """Scroll throttlé via requestAnimationFrame pendant le streaming."""
+    """Scroll géré nativement par react-virtuoso (plus besoin de rAF manuel)."""
 
-    def test_raf_used_for_streaming_scroll(self):
-        """MessageList doit utiliser requestAnimationFrame pendant le streaming."""
+    def test_virtuoso_replaces_raf_scroll(self):
+        """MessageList doit utiliser Virtuoso au lieu de requestAnimationFrame manuel."""
         content = MESSAGE_LIST_TSX.read_text(encoding="utf-8")
-        assert "requestAnimationFrame" in content, (
-            "MessageList doit utiliser requestAnimationFrame pour throttler le scroll streaming"
+        assert "Virtuoso" in content, (
+            "MessageList doit utiliser Virtuoso qui gère le scroll nativement (remplace rAF)"
+        )
+        assert "followOutput" in content, (
+            "MessageList doit utiliser followOutput de Virtuoso pour le scroll streaming"
         )
 
-    def test_raf_ref_present(self):
-        """MessageList doit avoir un ref pour tracker le rAF en cours."""
+    def test_virtuoso_ref_present(self):
+        """MessageList doit avoir un ref VirtuosoHandle pour le contrôle programmatique."""
         content = MESSAGE_LIST_TSX.read_text(encoding="utf-8")
-        assert "rafRef" in content, (
-            "MessageList doit avoir un rafRef pour éviter les appels rAF redondants"
+        assert "VirtuosoHandle" in content, (
+            "MessageList doit avoir un ref VirtuosoHandle pour le contrôle du scroll"
         )
 
 
@@ -685,19 +689,20 @@ class TestUXSidebarDefault:
     """La sidebar conversations doit être visible au premier lancement."""
 
     def test_sidebar_default_true(self):
-        """showConversationSidebar doit être initialisé à true."""
-        content = CHAT_LAYOUT_TSX.read_text(encoding="utf-8")
-        assert "useState(true)" in content, (
-            "showConversationSidebar doit être initialisé à true (sidebar visible par défaut)"
+        """showConversationSidebar doit être initialisé à true dans panelStore."""
+        panel_store = FRONTEND / "stores" / "panelStore.ts"
+        content = panel_store.read_text(encoding="utf-8")
+        assert "showConversationSidebar: true" in content, (
+            "showConversationSidebar doit être initialisé à true dans panelStore (sidebar visible par défaut)"
         )
-        # Vérifier que c'est bien le bon useState (celui de showConversationSidebar)
-        lines = content.split("\n")
-        for line in lines:
-            if "showConversationSidebar" in line and "useState" in line:
-                assert "useState(true)" in line, (
-                    "showConversationSidebar doit utiliser useState(true)"
-                )
-                break
+        # Vérifier que ChatLayout utilise bien le panelStore pour la sidebar
+        layout_content = CHAT_LAYOUT_TSX.read_text(encoding="utf-8")
+        assert "usePanelStore" in layout_content, (
+            "ChatLayout doit utiliser usePanelStore pour gérer la sidebar"
+        )
+        assert "showConversationSidebar" in layout_content, (
+            "ChatLayout doit utiliser showConversationSidebar du panelStore"
+        )
 
 
 # ============================================================
@@ -1411,17 +1416,25 @@ class TestSaveAsCommand:
             "MessageList doit avoir la prop onSaveAsCommand"
         )
 
-    def test_chat_layout_has_save_command_modal(self):
-        """ChatLayout doit afficher le modal CreateCommandForm."""
-        content = (FRONTEND / "components" / "chat" / "ChatLayout.tsx").read_text(encoding="utf-8")
+    def test_panel_container_has_save_command_modal(self):
+        """PanelContainer doit afficher le modal CreateCommandForm (extrait de ChatLayout)."""
+        content = (FRONTEND / "components" / "chat" / "PanelContainer.tsx").read_text(encoding="utf-8")
         assert "CreateCommandForm" in content, (
-            "ChatLayout doit importer CreateCommandForm"
+            "PanelContainer doit importer CreateCommandForm"
         )
         assert "showSaveCommand" in content, (
-            "ChatLayout doit avoir un state showSaveCommand"
+            "PanelContainer doit utiliser showSaveCommand du panelStore"
         )
-        assert "handleSaveAsCommand" in content, (
-            "ChatLayout doit avoir le handler handleSaveAsCommand"
+        assert "handleSaveCommandSubmit" in content, (
+            "PanelContainer doit avoir le handler handleSaveCommandSubmit"
+        )
+        # Vérifier que ChatLayout délègue bien à PanelContainer
+        layout_content = (FRONTEND / "components" / "chat" / "ChatLayout.tsx").read_text(encoding="utf-8")
+        assert "PanelContainer" in layout_content, (
+            "ChatLayout doit inclure PanelContainer"
+        )
+        assert "openSaveCommand" in layout_content, (
+            "ChatLayout doit appeler openSaveCommand du panelStore"
         )
 
     def test_create_command_form_accepts_initial_values(self):
@@ -1997,25 +2010,25 @@ class TestBUG026_EmailUtiliserButton:
 # ─── BUG-037 Saut scroll résiduel en fin de streaming ────────────────────
 
 class TestBUG037_ScrollJumpStreaming:
-    """MessageList doit utiliser un scroll instantané en fin de streaming."""
+    """MessageList doit éviter les sauts de scroll en fin de streaming via Virtuoso."""
 
     MSG_LIST = Path("src/frontend/src/components/chat/MessageList.tsx")
 
-    def test_was_streaming_ref_present(self):
-        """Le ref wasStreamingRef doit exister pour distinguer fin-streaming vs nouveau message."""
+    def test_virtuoso_follow_output_present(self):
+        """followOutput de Virtuoso doit gérer la transition fin-streaming sans saut."""
         content = self.MSG_LIST.read_text(encoding="utf-8")
-        assert "wasStreamingRef" in content, (
-            "MessageList doit avoir un ref wasStreamingRef pour détecter la fin du streaming"
+        assert "followOutput" in content, (
+            "MessageList doit utiliser followOutput de Virtuoso pour éviter les sauts de scroll"
         )
 
-    def test_instant_scroll_on_streaming_end(self):
-        """En fin de streaming, le scroll doit être instantané (scrollTop = scrollHeight)."""
+    def test_align_to_bottom_prevents_jump(self):
+        """alignToBottom de Virtuoso doit être activé pour éviter les sauts en fin de streaming."""
         content = self.MSG_LIST.read_text(encoding="utf-8")
-        assert "wasStreamingRef.current" in content, (
-            "MessageList doit utiliser wasStreamingRef.current pour le scroll instantané"
+        assert "alignToBottom" in content, (
+            "MessageList doit utiliser alignToBottom de Virtuoso pour un scroll stable en fin de streaming"
         )
-        assert "container.scrollTop = container.scrollHeight" in content, (
-            "En fin de streaming, le scroll doit être instantané (container.scrollTop = container.scrollHeight)"
+        assert "Virtuoso" in content, (
+            "MessageList doit utiliser Virtuoso pour gérer le scroll sans saut"
         )
 
 
