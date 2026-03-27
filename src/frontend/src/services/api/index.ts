@@ -376,11 +376,13 @@ export {
   markInvoicePaid,
   generateInvoicePDF,
   sendInvoiceByEmail,
+  convertDevisToInvoice,
   type InvoiceLine,
   type Invoice,
   type InvoiceLineRequest,
   type CreateInvoiceRequest,
   type UpdateInvoiceRequest,
+  type ConvertDevisRequest,
 } from './invoices';
 
 // CRM - Contact creation + push
@@ -480,3 +482,25 @@ export {
   type RGPDStatsResponse,
   type RGPDInferResponse,
 } from './rgpd';
+
+// Notifications - Push in-app (US-004)
+export {
+  listNotifications,
+  getUnreadCount,
+  markNotificationRead,
+  markAllNotificationsRead,
+  generateNotifications,
+  type AppNotification,
+  type NotificationCount,
+} from "./notifications";
+
+// Dashboard - Tableau de bord Ma journée (US-005)
+export {
+  fetchTodayDashboard,
+  type DashboardEvent,
+  type DashboardTask,
+  type DashboardInvoice,
+  type DashboardProspect,
+  type DashboardSummary,
+  type TodayDashboard,
+} from './dashboard';

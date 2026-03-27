@@ -1033,13 +1033,13 @@ async def initiate_sheets_oauth(
                 if cid:
                     try:
                         cid = decrypt_value(cid)
-                    except Exception:
-                        pass  # May not be encrypted
+                    except Exception as e:
+                        logger.debug("Echec dechiffrement credential CRM: %s", e)
                 if csecret:
                     try:
                         csecret = decrypt_value(csecret)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Echec dechiffrement credential CRM: %s", e)
 
                 if cid and csecret:
                     client_id = cid
@@ -1066,8 +1066,8 @@ async def initiate_sheets_oauth(
                 client_id = decrypt_value(client_id_pref.value)
                 client_secret = decrypt_value(client_secret_pref.value)
                 logger.info("Using Google credentials from preferences")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Echec dechiffrement credential CRM: %s", e)
 
     # Fallback 3: réutiliser les credentials d'un EmailAccount Google existant
     if not client_id or not client_secret:
@@ -1205,7 +1205,7 @@ async def sync_crm(
             try:
                 api_key = decrypt_value(gemini_pref.value)
                 logger.info("Using Gemini API key for CRM sync")
-            except Exception:
+            except Exception as e:
                 logger.warning("Échec déchiffrement clé Gemini pour CRM sync")
                 api_key = None
 

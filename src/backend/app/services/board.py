@@ -182,8 +182,8 @@ class BoardService:
                 user_llm = get_llm_service()
                 if user_llm and user_llm.config.provider == LLMProvider.OLLAMA:
                     default_ollama_model = user_llm.config.model
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("LLM service non disponible pour Board: %s", e)
             # Fallback : utiliser le premier modèle disponible via Ollama API
             if not default_ollama_model or ":" not in default_ollama_model:
                 try:
@@ -193,8 +193,8 @@ class BoardService:
                         models = resp.json().get("models", [])
                         if models:
                             default_ollama_model = models[0]["name"]
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("Ollama API non disponible: %s", e)
 
             for role in advisors:
                 config = ADVISOR_CONFIG[role]
@@ -395,8 +395,8 @@ class BoardService:
                 logger.error(f"Failed to save board decision: {e}", exc_info=True)
                 try:
                     await self._session.rollback()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("Rollback apres erreur save: %s", e)
         else:
             logger.warning("No session provided, decision not persisted")
 

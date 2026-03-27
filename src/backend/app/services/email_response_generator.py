@@ -109,7 +109,8 @@ Rédige une réponse appropriée en français."""
 
             return response_text
 
-        except Exception:
+        except Exception as e:
+            logger.warning("Erreur generation reponse email, fallback: %s", e)
             # Fallback si erreur LLM
             return f"""Bonjour {from_name},
 

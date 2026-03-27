@@ -59,7 +59,8 @@ async def _check_key_decryptable(session: AsyncSession, pref_key: str) -> tuple[
         if is_value_encrypted(pref.value):
             decrypt_value(pref.value)
         return True, False
-    except Exception:
+    except Exception as e:
+        logger.debug("Verification echouee: %s", e)
         return False, True
 
 
@@ -72,8 +73,8 @@ async def get_config(session: AsyncSession = Depends(get_session)):
         client = await get_http_client()
         response = await client.get(f"{settings.ollama_base_url}/api/tags", timeout=2.0)
         ollama_available = response.status_code == 200
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Service non disponible: %s", e)
 
     corrupted_keys: list[str] = []
 
@@ -958,7 +959,7 @@ async def get_llm_config(session: AsyncSession = Depends(get_session)):
                     m.get("name", "") for m in data.get("models", [])
                     if m.get("name") and _categorize_ollama_model(m["name"]) == "chat"
                 ]
-        except Exception:
+        except Exception as e:
             # Ollama non disponible - liste vide, pas d'erreur
             available_models = []
 
@@ -1002,7 +1003,7 @@ async def set_llm_config(
         if is_value_encrypted(pref_value):
             try:
                 return decrypt_value(pref_value)
-            except Exception:
+            except Exception as e:
                 logger.warning("Échec déchiffrement clé API dans set_llm_config")
                 return None
         return pref_value
@@ -1075,8 +1076,8 @@ async def set_llm_config(
             if resp.status_code == 200:
                 data = resp.json()
                 post_available_models = [m.get("name", "") for m in data.get("models", []) if m.get("name")]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Service non disponible: %s", e)
 
     return LLMConfigResponse(
         provider=request.provider,
@@ -1252,4 +1253,56 @@ async def set_onboarding_complete(session: AsyncSession = Depends(get_session)):
     return {
         "completed": True,
         "completed_at": pref.updated_at.isoformat() if pref.updated_at else datetime.now(UTC).isoformat(),
+    }
+
+
+
+# ============================================================
+# US-006 : Circuit breaker LLM - Endpoint statut
+# ============================================================
+
+
+@router.get("/llm/status")
+async def get_llm_status():
+    """Retourne l'état du circuit breaker pour chaque provider LLM.
+
+    US-006 : Permet au frontend d'afficher un bandeau
+    "Mode dégradé - modèle de secours actif" si un provider est down.
+
+    Returns:
+        - providers: dict des états par provider (closed/open/half-open)
+        - degraded: bool indiquant si au moins un provider est en mode dégradé
+        - degraded_message: message localisé pour le frontend (ou null)
+    """
+    from app.services.circuit_breaker import get_circuit_breaker
+
+    cb = get_circuit_breaker()
+    statuses = cb.get_all_statuses()
+    degraded_msg = cb.get_degraded_message()
+
+    return {
+        "providers": statuses,
+        "degraded": degraded_msg is not None,
+        "degraded_message": degraded_msg,
+    }
+
+
+@router.post("/llm/circuit-breaker/reset")
+async def reset_circuit_breaker(provider: str | None = None):
+    """Reset le circuit breaker pour un provider (ou tous).
+
+    US-006 : Permet a l'utilisateur de forcer la reconnexion
+    a un provider marqué comme down.
+
+    Args:
+        provider: Nom du provider a reset (ou None pour tous).
+    """
+    from app.services.circuit_breaker import get_circuit_breaker
+
+    cb = get_circuit_breaker()
+    cb.reset(provider)
+
+    return {
+        "reset": provider or "all",
+        "statuses": cb.get_all_statuses(),
     }

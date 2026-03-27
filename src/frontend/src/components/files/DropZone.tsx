@@ -75,7 +75,7 @@ export function DropZone({ isDragging, className }: DropZoneProps) {
 
             <div className="text-center">
               <h3 className="text-xl font-semibold text-text">
-                Déposez vos fichiers
+                Dépose tes fichiers
               </h3>
               <p className="mt-2 text-sm text-text-muted">
                 PDF, texte, code, images...

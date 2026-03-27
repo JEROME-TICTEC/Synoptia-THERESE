@@ -1,6 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { useChatStore } from '../../stores/chatStore';
+import { useAccessibilityStore } from '../../stores/accessibilityStore';
+import { announceToScreenReader } from '../../lib/accessibility';
 import { MessageBubble } from './MessageBubble';
 import { TypingIndicator } from './TypingIndicator';
 import { HomeCommands } from '../home';
@@ -20,69 +23,34 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
   const isStreaming = useChatStore((state) => state.isStreaming);
   const clearMessageEntities = useChatStore((state) => state.clearMessageEntities);
   const { enabled: demoEnabled, maskText } = useDemoMask();
+  const reduceMotion = useAccessibilityStore((s) => s.reduceMotion);
+  const announceMessages = useAccessibilityStore((s) => s.announceMessages);
+  const prevMsgCountRef = useRef(0);
 
   // Compute current conversation from subscribed state
   const conversation = conversations.find((c) => c.id === currentConversationId) || null;
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const userScrolledUp = useRef(false);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
 
   const handleEntityDismiss = useCallback((messageId: string) => {
     clearMessageEntities(messageId);
   }, [clearMessageEntities]);
 
   const handleEntitySaved = useCallback(() => {
-    // Could trigger a notification or refresh here
     console.log('Entity saved to memory');
   }, []);
 
-  // Détecter si l'utilisateur a scrollé vers le haut (pour ne pas forcer le scroll)
-  const handleScroll = useCallback(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-    userScrolledUp.current = distanceFromBottom > 100;
-  }, []);
-
-  // Throttle ref pour requestAnimationFrame (évite les saccades streaming)
-  const rafRef = useRef<number | null>(null);
-  // Suivre si on était en streaming pour distinguer fin-streaming vs nouveau message
-  const wasStreamingRef = useRef(false);
-
-  // Auto-scroll : throttlé via rAF pendant le streaming, smooth pour nouveaux messages
-  useLayoutEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    if (isStreaming) {
-      wasStreamingRef.current = true;
-      if (userScrolledUp.current) return; // L'utilisateur a scrollé, pas de force-scroll
-      // Pendant le streaming : throttler avec requestAnimationFrame
-      if (rafRef.current === null) {
-        rafRef.current = requestAnimationFrame(() => {
-          container.scrollTop = container.scrollHeight;
-          rafRef.current = null;
-        });
-      }
-    } else if (wasStreamingRef.current) {
-      // Fin de streaming : réinitialiser le ref TOUJOURS (même si l'utilisateur a scrollé)
-      // pour éviter que le prochain message utilisateur hérite du scroll instantané
-      wasStreamingRef.current = false;
-      if (userScrolledUp.current) return; // L'utilisateur a scrollé, respecter son choix
-      // Scroll instantané (pas smooth) pour éviter le saut visible :
-      // le contenu vient de passer de texte brut à Markdown+boutons, la hauteur a changé
-      container.scrollTop = container.scrollHeight;
-    } else {
-      if (userScrolledUp.current) return; // L'utilisateur a scrollé, pas de force-scroll
-      // Nouveau message utilisateur (pas fin de streaming) : smooth scroll
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [conversation?.messages, isStreaming]);
-
-  // Quand un nouveau message utilisateur est envoyé, reset le flag
+  // US-012 : Annoncer les nouveaux messages assistant au lecteur d'écran
   useEffect(() => {
-    userScrolledUp.current = false;
-  }, [conversation?.messages?.length]);
+    if (!conversation || !announceMessages) return;
+    const msgCount = conversation.messages.length;
+    if (msgCount > prevMsgCountRef.current && msgCount > 0) {
+      const lastMsg = conversation.messages[msgCount - 1];
+      if (lastMsg.role === 'assistant' && !lastMsg.isStreaming) {
+        announceToScreenReader('Nouveau message de Therese');
+      }
+    }
+    prevMsgCountRef.current = msgCount;
+  }, [conversation?.messages, announceMessages]);
 
   // Mode démo : masquer le contenu des messages avant rendu
   const displayMessages = useMemo(() => {
@@ -94,6 +62,63 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
     }));
   }, [demoEnabled, conversation, maskText]);
 
+  // followOutput : scroller automatiquement quand un nouveau message arrive
+  const followOutput = useCallback((isAtBottom: boolean) => {
+    if (isAtBottom) {
+      return 'smooth' as const;
+    }
+    return false as const;
+  }, []);
+
+  // Rendu d'un item dans la liste virtualisée
+  const itemContent = useCallback((index: number) => {
+    const message = displayMessages[index];
+    if (!message) return null;
+
+    return (
+      <div
+        className="py-2"
+        style={{
+          contentVisibility: message.isStreaming ? 'visible' : 'auto',
+          containIntrinsicSize: 'auto 80px',
+        }}
+      >
+        <MessageBubble
+          message={message}
+          onSaveAsCommand={
+            message.role === 'assistant' && !message.isStreaming && onSaveAsCommand
+              ? () => {
+                  const msgIndex = displayMessages.indexOf(message);
+                  let userPrompt = '';
+                  for (let i = msgIndex - 1; i >= 0; i--) {
+                    if (displayMessages[i].role === 'user') {
+                      userPrompt = displayMessages[i].content;
+                      break;
+                    }
+                  }
+                  onSaveAsCommand(userPrompt, message.content);
+                }
+              : undefined
+          }
+        />
+
+        {/* Show entity suggestions after assistant messages */}
+        {message.role === 'assistant' && message.detectedEntities && (
+          (message.detectedEntities.contacts.length > 0 ||
+            message.detectedEntities.projects.length > 0) && (
+            <EntitySuggestion
+              contacts={message.detectedEntities.contacts}
+              projects={message.detectedEntities.projects}
+              messageId={message.id}
+              onDismiss={() => handleEntityDismiss(message.id)}
+              onSaved={handleEntitySaved}
+            />
+          )
+        )}
+      </div>
+    );
+  }, [displayMessages, onSaveAsCommand, handleEntityDismiss, handleEntitySaved]);
+
   // Empty state with guided prompts UI
   if (!conversation || conversation.messages.length === 0) {
     return (
@@ -104,73 +129,45 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
   }
 
   return (
-    <div ref={scrollContainerRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 py-6" style={{ overflowAnchor: 'none' }}>
-      <div className="max-w-3xl mx-auto space-y-4">
-        <AnimatePresence initial={false}>
-          {displayMessages.map((message, index) => (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{
-                duration: 0.2,
-                delay: index * 0.03,
-              }}
-              style={{
-                contentVisibility: message.isStreaming ? 'visible' : 'auto',
-                containIntrinsicSize: 'auto 80px',
-              }}
-            >
-              <MessageBubble
-                message={message}
-                onSaveAsCommand={
-                  message.role === 'assistant' && !message.isStreaming && onSaveAsCommand
-                    ? () => {
-                        // Trouver le message utilisateur précédent
-                        const msgIndex = displayMessages.indexOf(message);
-                        let userPrompt = '';
-                        for (let i = msgIndex - 1; i >= 0; i--) {
-                          if (displayMessages[i].role === 'user') {
-                            userPrompt = displayMessages[i].content;
-                            break;
-                          }
-                        }
-                        onSaveAsCommand(userPrompt, message.content);
-                      }
-                    : undefined
-                }
-              />
-
-              {/* Show entity suggestions after assistant messages */}
-              {message.role === 'assistant' && message.detectedEntities && (
-                (message.detectedEntities.contacts.length > 0 ||
-                  message.detectedEntities.projects.length > 0) && (
-                  <EntitySuggestion
-                    contacts={message.detectedEntities.contacts}
-                    projects={message.detectedEntities.projects}
-                    messageId={message.id}
-                    onDismiss={() => handleEntityDismiss(message.id)}
-                    onSaved={handleEntitySaved}
-                  />
-                )
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {isStreaming && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <TypingIndicator />
-          </motion.div>
-        )}
-
-        {/* Ancre scroll - overflow-anchor fonctionne sur WebView2 (Windows) */}
-        <div ref={messagesEndRef} style={{ overflowAnchor: 'auto', height: 1 }} />
-      </div>
+    <div className="h-full" aria-live="polite" aria-label="Messages de la conversation">
+      <Virtuoso
+        ref={virtuosoRef}
+        data={displayMessages}
+        totalCount={displayMessages.length}
+        overscan={200}
+        followOutput={followOutput}
+        initialTopMostItemIndex={displayMessages.length - 1}
+        alignToBottom
+        itemContent={itemContent}
+        className="h-full"
+        style={{ height: '100%' }}
+        components={{
+          // Wrapper pour le contenu scrollable avec le bon max-width
+          List: ({ style, children, ...props }) => (
+            <div {...props} style={style}>
+              <div className="max-w-3xl mx-auto px-4 py-6">
+                {children}
+              </div>
+            </div>
+          ),
+          // Footer : typing indicator + ancre scroll
+          Footer: () => (
+            <div className="max-w-3xl mx-auto px-4">
+              <AnimatePresence>
+                {isStreaming && (
+                  <motion.div
+                    initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <TypingIndicator />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ),
+        }}
+      />
     </div>
   );
 }

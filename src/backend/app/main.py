@@ -18,6 +18,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.gzip import GZipMiddleware
 
 # Rate limiting (SEC-015) - slowapi est requis (dans pyproject.toml)
 try:
@@ -57,17 +58,23 @@ from app.routers import (
     skills_router,
     tasks_router,  # Phase 3 - ACTIVATED
     tools_router,  # V3 - Installed Tools
+    notifications_router,  # US-004 - Notifications push in-app
+    dashboard_router,  # US-005 - Dashboard Ma journée
     voice_router,
 )
 from app.services import close_qdrant, init_qdrant
 from app.services.mcp_service import get_mcp_service, initialize_mcp_service
 from app.services.skills import close_skills, init_skills
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG if settings.debug else logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+# Configure structured logging (US-014)
+from app.core.logging_config import setup_logging
+setup_logging()
+
+# Legacy basicConfig remplacé par setup_logging() ci-dessus
+# logging.basicConfig(
+#    level=logging.DEBUG if settings.debug else logging.INFO,
+#    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+#)
 logger = logging.getLogger(__name__)
 
 
@@ -125,6 +132,28 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database initialized")
 
+    # Migration auto : ajouter les colonnes manquantes (desktop = pas d'alembic auto)
+    try:
+        import sqlite3
+        db_path = settings.db_path
+        if db_path and FilePath(str(db_path)).exists():
+            with sqlite3.connect(str(db_path)) as conn:
+                cursor = conn.execute("PRAGMA table_info(invoices)")
+                columns = [row[1] for row in cursor.fetchall()]
+                if columns and "currency" not in columns:
+                    conn.execute("ALTER TABLE invoices ADD COLUMN currency TEXT DEFAULT 'EUR'")
+                    conn.commit()
+                    logger.info("Migration auto : colonne 'currency' ajoutée à la table invoices")
+                # US-017 : purge_excluded sur contacts
+                cursor = conn.execute("PRAGMA table_info(contacts)")
+                contact_columns = [row[1] for row in cursor.fetchall()]
+                if contact_columns and "purge_excluded" not in contact_columns:
+                    conn.execute("ALTER TABLE contacts ADD COLUMN purge_excluded BOOLEAN DEFAULT 0")
+                    conn.commit()
+                    logger.info("Migration auto : colonne 'purge_excluded' ajoutée à la table contacts")
+    except Exception as e:
+        logger.warning(f"Migration auto ignorée : {e}")
+
     # En mode test (THERESE_SKIP_SERVICES=1), sauter les services externes
     # qui bloquent les tests (Qdrant, embeddings, MCP, skills)
     skip_services = os.environ.get("THERESE_SKIP_SERVICES") == "1"
@@ -160,11 +189,6 @@ async def lifespan(app: FastAPI):
         # Load Brave Search API key into cache if configured
         await _load_brave_key()
 
-        # Load API key cache (pour que les agents partagent les clés)
-        from app.services.llm import load_api_key_cache
-        await load_api_key_cache()
-        logger.info("API key cache loaded")
-
         # Initialize command registry (V3 unified commands)
         from app.services.command_registry import init_command_registry
         await init_command_registry()
@@ -173,6 +197,46 @@ async def lifespan(app: FastAPI):
         # Start OAuth cleanup background task
         from app.services.oauth import cleanup_expired_flows_periodically
         oauth_cleanup_task = asyncio.create_task(cleanup_expired_flows_periodically())
+
+        # US-004 - Notification scheduler (generation auto toutes les heures)
+        from app.services.notification_service import generate_automatic_notifications
+
+        async def _notification_scheduler():
+            """Genere les notifications automatiques au demarrage puis toutes les heures."""
+            # Generation initiale au demarrage
+            try:
+                await generate_automatic_notifications()
+                logger.info("Notifications initiales generees")
+            except Exception as e:
+                logger.error(f"Erreur generation notifications initiale: {e}")
+            # Boucle horaire
+            while True:
+                await asyncio.sleep(3600)
+                try:
+                    await generate_automatic_notifications()
+                except Exception as e:
+                    logger.error(f"Notification scheduler error: {e}")
+
+        notification_task = asyncio.create_task(_notification_scheduler())
+
+        # US-017 - Purge RGPD automatique (une fois par jour)
+        from app.services.rgpd_auto import auto_purge_expired_contacts
+
+        async def _rgpd_purge_scheduler():
+            """Purge RGPD automatique au demarrage puis toutes les 24h."""
+            try:
+                await auto_purge_expired_contacts()
+                logger.info("Purge RGPD initiale executee")
+            except Exception as e:
+                logger.error(f"Erreur purge RGPD initiale: {e}")
+            while True:
+                await asyncio.sleep(86400)  # 24 heures
+                try:
+                    await auto_purge_expired_contacts()
+                except Exception as e:
+                    logger.error(f"RGPD purge scheduler error: {e}")
+
+        rgpd_purge_task = asyncio.create_task(_rgpd_purge_scheduler())
     else:
         logger.info("Mode test : services externes ignorés (THERESE_SKIP_SERVICES=1)")
         oauth_cleanup_task = None
@@ -210,13 +274,27 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
 
+    # Cancel notification scheduler
+    try:
+        notification_task.cancel()
+        await notification_task
+    except (asyncio.CancelledError, NameError):
+        pass
+
+    # Cancel RGPD purge scheduler
+    try:
+        rgpd_purge_task.cancel()
+        await rgpd_purge_task
+    except (asyncio.CancelledError, NameError):
+        pass
+
     # Cleanup session token
     try:
         token_path = FilePath.home() / ".therese" / ".session_token"
         if token_path.exists():
             token_path.unlink()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Nettoyage non critique echoue: %s", e)
 
     # Close global HTTP client pool (Sprint 2 - PERF-2.6)
     from app.services.http_client import close_http_client
@@ -479,6 +557,11 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],  # Pour le telechargement de fichiers
 )
 
+# GZip compression (US-009 - v0.9.0)
+# Compresse les réponses > 500 octets pour réduire la bande passante.
+# Note : StreamingResponse (SSE) n'est pas compressée par GZipMiddleware.
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
 
 # Include routers
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
@@ -526,6 +609,11 @@ app.include_router(agents_router, prefix="/api/agents", tags=["Agents"])
 
 # v0.6 - Browser Automation (Manus-inspired)
 app.include_router(browser_router, prefix="/api/browser", tags=["Browser"])
+
+# US-004 - Notifications push in-app (v0.9.0)
+app.include_router(notifications_router, prefix="/api/notifications", tags=["Notifications"])
+#  US-005 - Dashboard Ma journée (v0.9.0)
+app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"])
 
 
 # Health endpoints
@@ -602,7 +690,7 @@ async def service_status():
 
         service = get_qdrant_service()
         service.get_stats()
-    except Exception:
+    except Exception as e:
         qdrant_available = False
 
     status.set_available("qdrant", qdrant_available)
@@ -614,7 +702,7 @@ async def service_status():
 
         async with get_session_context() as session:
             await session.execute("SELECT 1")
-    except Exception:
+    except Exception as e:
         db_available = False
 
     status.set_available("database", db_available)

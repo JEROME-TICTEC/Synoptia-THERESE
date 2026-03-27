@@ -177,7 +177,7 @@ export function ContactModal({ isOpen, onClose, onSaved, contact }: ContactModal
                     {isEditing ? 'Modifier le contact' : 'Nouveau contact'}
                   </h2>
                   <p className="text-xs text-text-muted">
-                    {isEditing ? 'Modifiez les informations du contact' : 'Ajoutez un nouveau contact à votre mémoire'}
+                    {isEditing ? 'Modifie les informations du contact' : 'Ajoute un nouveau contact à ta mémoire'}
                   </p>
                 </div>
               </div>

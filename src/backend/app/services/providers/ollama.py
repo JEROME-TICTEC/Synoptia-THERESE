@@ -121,7 +121,8 @@ class OllamaProvider(BaseProvider):
             try:
                 body = e.response.json()
                 detail = body.get("error", str(e))
-            except Exception:
+            except Exception as e:
+                logger.debug("Impossible de parser le body erreur Ollama: %s", e)
                 detail = str(e)
             logger.error(f"Ollama HTTP {status}: {detail}")
             if status == 404:

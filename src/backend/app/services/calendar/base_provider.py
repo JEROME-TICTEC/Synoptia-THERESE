@@ -365,5 +365,6 @@ class CalendarProvider(ABC):
         try:
             await self.list_calendars()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning("Test connexion calendrier echoue: %s", e)
             return False

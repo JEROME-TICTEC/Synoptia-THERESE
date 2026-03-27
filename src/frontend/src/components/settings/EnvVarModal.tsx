@@ -188,7 +188,7 @@ export function EnvVarModal({ preset, onSubmit, onCancel }: EnvVarModalProps) {
           <AlertCircle className="w-5 h-5 text-accent-cyan shrink-0 mt-0.5" />
           <div className="text-sm text-text-muted">
             <p>Ce serveur nécessite des clés API pour fonctionner.</p>
-            <p className="mt-1">Vos clés seront chiffrées et stockées localement.</p>
+            <p className="mt-1">Tes clés seront chiffrées et stockées localement.</p>
           </div>
         </div>
 
@@ -229,7 +229,7 @@ export function EnvVarModal({ preset, onSubmit, onCancel }: EnvVarModalProps) {
                     type={show ? 'text' : 'password'}
                     value={value}
                     onChange={(e) => handleValueChange(envVar, e.target.value)}
-                    placeholder={config.prefix ? `${config.prefix}...` : 'Entrez la clé API'}
+                    placeholder={config.prefix ? `${config.prefix}...` : 'Entre la clé API'}
                     className={`w-full px-3 py-2 pr-20 bg-background/60 border rounded-lg text-sm text-text placeholder:text-text-muted/50 focus:outline-none focus:ring-2 ${
                       error
                         ? 'border-red-500/50 focus:ring-red-500/50'

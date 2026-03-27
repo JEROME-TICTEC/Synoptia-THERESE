@@ -48,6 +48,11 @@ from app.routers.tasks import router as tasks_router
 from app.routers.tools import router as tools_router
 from app.routers.voice import router as voice_router
 
+# US-004 - Notifications push in-app (v0.9.0)
+from app.routers.notifications import router as notifications_router
+# US-005 - Dashboard "Ma journée" (v0.9.0)
+from app.routers.dashboard import router as dashboard_router
+
 __all__ = [
     "chat_router",
     "memory_router",
@@ -75,4 +80,6 @@ __all__ = [
     "tools_router",  # V3 - Installed Tools
     "agents_router",  # v0.5 - Agents IA Embarqués (Atelier)
     "browser_router",  # v0.6 - Browser Automation
+    "notifications_router",  # US-004 - Notifications push in-app
+    "dashboard_router",  # US-005 - Dashboard Ma journée
 ]

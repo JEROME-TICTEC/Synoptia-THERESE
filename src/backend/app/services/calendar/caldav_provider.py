@@ -248,8 +248,8 @@ class CalDAVProvider(CalendarProvider):
             try:
                 event = cal.event_by_uid(event_id)
                 return self._caldav_event_to_dto(event, calendar_id)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("CalDAV evenement non trouve par UID, recherche sequentielle: %s", e)
 
             # Search all events
             events = cal.events()
@@ -355,7 +355,7 @@ class CalDAVProvider(CalendarProvider):
             event = None
             try:
                 event = cal.event_by_uid(event_id)
-            except Exception:
+            except Exception as e:
                 for e in cal.events():
                     if self._get_event_uid(e) == event_id:
                         event = e
@@ -436,8 +436,8 @@ class CalDAVProvider(CalendarProvider):
                 event = cal.event_by_uid(event_id)
                 event.delete()
                 return
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("CalDAV evenement non trouve par UID, recherche sequentielle: %s", e)
 
             for event in cal.events():
                 if self._get_event_uid(event) == event_id:
@@ -545,6 +545,6 @@ class CalDAVProvider(CalendarProvider):
             for component in ical.walk():
                 if component.name == "VEVENT":
                     return str(component.get("uid", ""))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("CalDAV evenement non trouve par UID, recherche sequentielle: %s", e)
         return ""

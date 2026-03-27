@@ -41,8 +41,8 @@ def _get_agent_model(agent_id: str) -> str | None:
             conn.close()
             if row and row[0]:
                 return row[0]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Impossible de lire modele agent depuis DB: %s", e)
     return None
 
 

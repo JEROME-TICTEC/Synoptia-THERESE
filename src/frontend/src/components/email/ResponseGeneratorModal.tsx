@@ -55,7 +55,7 @@ export function ResponseGeneratorModal({
       setHasGenerated(true);
     } catch (error) {
       console.error('Failed to generate response:', error);
-      setDraft('❌ Erreur lors de la génération. Veuillez réessayer.');
+      setDraft('❌ Erreur lors de la génération. Réessaie.');
     } finally {
       setIsGenerating(false);
     }

@@ -27,7 +27,7 @@ export function AccessibilityTab() {
         <div>
           <h3 className="font-medium text-text">Accessibilité</h3>
           <p className="text-xs text-text-muted">
-            Personnalisez l'interface pour vos besoins
+            Personnalise l'interface selon tes besoins
           </p>
         </div>
       </div>

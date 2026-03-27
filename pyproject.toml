@@ -78,7 +78,7 @@ target-version = "py311"
 exclude = ["src/backend/alembic/versions/"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "C90", "SIM"]
+select = ["E", "F", "W", "I", "B", "BLE", "C90", "SIM"]
 ignore = [
     "E501",   # Longueur de ligne (gere au cas par cas)
     "B008",   # Depends() dans args par defaut = pattern standard FastAPI

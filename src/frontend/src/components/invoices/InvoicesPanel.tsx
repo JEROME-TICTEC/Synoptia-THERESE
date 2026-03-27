@@ -18,15 +18,18 @@ import {
   Ban,
 } from 'lucide-react';
 import { useInvoiceStore } from '../../stores/invoiceStore';
+import { useStatusStore } from '../../stores/statusStore';
 import { listInvoices, deleteInvoice, generateInvoicePDF, sendInvoiceByEmail, type Invoice } from '../../services/api';
 import { InvoiceForm } from './InvoiceForm';
 import { cn } from '../../lib/utils';
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
   draft: { label: 'Brouillon', icon: FileText, color: 'text-text-muted' },
   sent: { label: 'Envoyée', icon: Mail, color: 'text-blue-500' },
+  accepted: { label: 'Accepté', icon: CheckCircle2, color: 'text-emerald-500' },
   paid: { label: 'Payée', icon: CheckCircle2, color: 'text-green-500' },
   overdue: { label: 'En retard', icon: AlertCircle, color: 'text-red-500' },
+  converted: { label: 'Converti', icon: FileText, color: 'text-purple-500' },
   cancelled: { label: 'Annulée', icon: Ban, color: 'text-text-muted' },
 };
 
@@ -45,6 +48,8 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
     removeInvoice,
     updateInvoiceInStore,
   } = useInvoiceStore();
+
+  const addNotification = useStatusStore((s) => s.addNotification);
 
   const [isLoading, setIsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -78,10 +83,10 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
       const result = await generateInvoicePDF(invoice.id);
       console.log('PDF generated:', result.pdf_path);
       // TODO: Ouvrir le PDF ou proposer le téléchargement
-      alert(`PDF généré: ${result.invoice_number}\nChemin: ${result.pdf_path}`);
+      addNotification({ type: 'success', title: 'PDF généré', message: result.invoice_number });
     } catch (error) {
       console.error('Failed to generate PDF:', error);
-      alert('Erreur lors de la génération du PDF');
+      addNotification({ type: 'error', title: 'Erreur', message: 'Impossible de générer le PDF' });
     }
   }
 
@@ -100,10 +105,10 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
         updateInvoiceInStore(updatedInvoice);
       }
 
-      alert(result.message || 'Email envoyé avec succès');
+      addNotification({ type: 'success', title: 'Email envoyé', message: result.message || 'Email envoyé avec succès' });
     } catch (error) {
       console.error('Failed to send email:', error);
-      alert('Erreur lors de l\'envoi de l\'email');
+      addNotification({ type: 'error', title: 'Erreur', message: "Impossible d'envoyer l'email" });
     }
   }
 
@@ -121,7 +126,7 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
       setDeletingInvoice(null);
     } catch (error) {
       console.error('Failed to delete invoice:', error);
-      alert('Erreur lors de la suppression');
+      addNotification({ type: 'error', title: 'Erreur', message: 'Impossible de supprimer la facture' });
     } finally {
       setIsDeleting(false);
     }

@@ -116,11 +116,11 @@ export function SmtpConfigStep({ onBack, onSuccess }: SmtpConfigStepProps) {
     } catch (err: any) {
       // "Failed to fetch" = erreur réseau (backend injoignable, CORS, URL incorrecte)
       if (err instanceof TypeError || err.message === 'Failed to fetch') {
-        setError('Impossible de joindre le serveur. Vérifiez l\'adresse et le port SMTP.');
+        setError('Impossible de joindre le serveur. Vérifie l\'adresse et le port SMTP.');
       } else if (err?.status === 401 || err?.status === 403) {
-        setError('Identifiants incorrects. Vérifiez votre adresse email et votre mot de passe.');
+        setError('Identifiants incorrects. Vérifie ton adresse email et ton mot de passe.');
       } else if (err?.status === 503 || err?.status === 502) {
-        setError('Le serveur SMTP est temporairement indisponible. Réessayez dans quelques instants.');
+        setError('Le serveur SMTP est temporairement indisponible. Réessaie dans quelques instants.');
       } else {
         setError(err.message || 'Échec du test de connexion');
       }
@@ -137,7 +137,7 @@ export function SmtpConfigStep({ onBack, onSuccess }: SmtpConfigStepProps) {
       onSuccess();
     } catch (err: any) {
       if (err instanceof TypeError || err.message === 'Failed to fetch') {
-        setError('Impossible de joindre le serveur. Vérifiez l\'adresse et le port SMTP.');
+        setError('Impossible de joindre le serveur. Vérifie l\'adresse et le port SMTP.');
       } else {
         setError(err.message || 'Échec de la configuration');
       }

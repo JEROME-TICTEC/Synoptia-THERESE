@@ -187,7 +187,7 @@ export function SkillExecutionPanel({
 
           {/* Description */}
           <p className="text-sm text-text-muted">
-            {status === 'generating' && 'THÉRÈSE prépare votre document'}
+            {status === 'generating' && 'THÉRÈSE prépare ton document'}
             {status === 'success' && config.description}
             {status === 'error' && (error || 'Une erreur est survenue')}
             {status === 'idle' && `Créer un fichier ${format.toUpperCase()}`}

@@ -131,8 +131,8 @@ async def init_db() -> None:
         for stmt in alter_statements:
             try:
                 conn.execute(sqlalchemy_text(stmt))
-            except Exception:
-                pass  # Colonne déjà existante
+            except Exception as e:
+                logger.debug("Migration colonne deja existante: %s", e)  # déjà existante
         conn.commit()
 
     # Phase 3 + PERF audit: Creer les index manquants pour les DB existantes
@@ -183,7 +183,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         try:
             yield session
             await session.commit()
-        except Exception:
+        except Exception as e:
             await session.rollback()
             raise
 
@@ -224,6 +224,6 @@ async def get_session_context():
         try:
             yield session
             await session.commit()
-        except Exception:
+        except Exception as e:
             await session.rollback()
             raise

@@ -453,7 +453,8 @@ class ImapSmtpProvider(EmailProvider):
                             path=folder_info.name,
                             delimiter=folder_info.delim,
                         ))
-                    except Exception:
+                    except Exception as e:
+                        logger.debug("Dossier IMAP non selectionnable, fallback: %s", e)
                         # Folder exists but can't be selected (e.g., parent folder)
                         folders.append(EmailFolderDTO(
                             id=folder_info.name,

@@ -241,8 +241,8 @@ async def _embed_profile(profile: UserProfile) -> None:
         # Supprimer l'ancien embedding si existant
         try:
             qdrant.delete_by_entity("owner_profile")
-        except Exception:
-            pass  # Pas grave si rien à supprimer
+        except Exception as e:
+            logger.debug("Qdrant operation non critique echouee: %s", e)
 
         qdrant.add_memory(
             text=text,
@@ -290,8 +290,8 @@ async def delete_user_profile(session: AsyncSession) -> bool:
         try:
             qdrant = get_qdrant_service()
             qdrant.delete_by_entity("owner_profile")
-        except Exception:
-            pass  # Non-critical
+        except Exception as e:
+            logger.debug("Qdrant operation non critique echouee: %s", e)
 
         logger.info("User profile deleted")
         return True
