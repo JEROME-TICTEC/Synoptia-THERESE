@@ -78,6 +78,7 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
     return (
       <div
         className="py-2"
+        data-testid="chat-message-item"
         style={{
           contentVisibility: message.isStreaming ? 'visible' : 'auto',
           containIntrinsicSize: 'auto 80px',
@@ -129,7 +130,7 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
   }
 
   return (
-    <div className="h-full" aria-live="polite" aria-label="Messages de la conversation">
+    <div className="h-full" aria-live="polite" aria-label="Messages de la conversation" data-testid="chat-message-list">
       <Virtuoso
         ref={virtuosoRef}
         data={displayMessages}

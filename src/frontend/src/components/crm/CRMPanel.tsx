@@ -287,7 +287,7 @@ export function CRMPanel({ isOpen, onClose, standalone = false }: CRMPanelProps)
   // Mode standalone : pleine page
   if (standalone) {
     return (
-      <div className="h-full flex flex-col bg-bg">
+      <div className="h-full flex flex-col bg-bg" data-testid="crm-panel">
         {crmHeader}
         {crmTabs}
         {crmContent}
@@ -319,6 +319,7 @@ export function CRMPanel({ isOpen, onClose, standalone = false }: CRMPanelProps)
             role="dialog"
             aria-modal="true"
             aria-label="CRM Pipeline"
+            data-testid="crm-panel"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}

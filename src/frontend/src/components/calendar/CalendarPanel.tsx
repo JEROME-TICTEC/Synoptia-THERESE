@@ -472,7 +472,7 @@ export function CalendarPanel({ isOpen, onClose, standalone = false }: CalendarP
   // Mode standalone : pleine page
   if (standalone) {
     return (
-      <div className="h-full flex flex-col bg-bg">
+      <div data-testid="calendar-panel" className="h-full flex flex-col bg-bg">
         {calendarHeader}
         {reauthBanner}
         {calendarNav}
@@ -484,7 +484,7 @@ export function CalendarPanel({ isOpen, onClose, standalone = false }: CalendarP
   // Mode modal
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div data-testid="calendar-panel" className="fixed inset-0 z-50 flex items-center justify-center">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}

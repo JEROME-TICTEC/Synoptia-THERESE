@@ -430,7 +430,7 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
   // Mode standalone : pleine page
   if (standalone) {
     return (
-      <div className="h-full flex flex-col bg-bg">
+      <div className="h-full flex flex-col bg-bg" data-testid="invoices-panel">
         {invoicesHeader}
         {invoicesFilters}
         {invoicesList}
@@ -460,6 +460,7 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
           role="dialog"
           aria-modal="true"
           aria-label="Factures"
+          data-testid="invoices-panel"
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}

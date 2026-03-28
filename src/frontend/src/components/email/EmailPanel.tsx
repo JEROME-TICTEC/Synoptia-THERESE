@@ -235,7 +235,7 @@ export function EmailPanel({ standalone = false }: EmailPanelProps) {
   // Mode standalone : pleine page sans modal
   if (standalone) {
     return (
-      <div className="h-full flex flex-col bg-bg">
+      <div data-testid="email-panel" className="h-full flex flex-col bg-bg">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/30">
           <div className="flex items-center gap-3">
@@ -449,7 +449,7 @@ export function EmailPanel({ standalone = false }: EmailPanelProps) {
 
   // Mode modal (comportement original)
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-testid="email-panel" className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}

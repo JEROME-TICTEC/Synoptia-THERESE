@@ -157,11 +157,11 @@ export function WorkingDirStep({ onNext, onBack }: WorkingDirStepProps) {
 
       {/* Footer */}
       <div className="flex justify-between pt-4 border-t border-border/30">
-        <Button variant="ghost" onClick={onBack}>
+        <Button variant="ghost" onClick={onBack} data-testid="onboarding-prev-btn">
           Retour
         </Button>
         <div className="flex gap-3">
-          <Button variant="ghost" onClick={onNext}>
+          <Button variant="ghost" onClick={onNext} data-testid="onboarding-skip-btn">
             Passer
           </Button>
           <Button
@@ -169,6 +169,7 @@ export function WorkingDirStep({ onNext, onBack }: WorkingDirStepProps) {
             onClick={onNext}
             disabled={!workingDir}
             title={!workingDir ? 'Sélectionne un dossier ou clique sur "Passer"' : undefined}
+            data-testid="onboarding-next-btn"
           >
             Continuer
           </Button>

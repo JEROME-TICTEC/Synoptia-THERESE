@@ -234,7 +234,7 @@ export function TasksPanel({ isOpen, onClose, standalone = false }: TasksPanelPr
   // Mode standalone : pleine page
   if (standalone) {
     return (
-      <div className="h-full flex flex-col bg-bg">
+      <div className="h-full flex flex-col bg-bg" data-testid="tasks-panel">
         {tasksHeader}
         {tasksFilters}
         {tasksContent}
@@ -258,6 +258,7 @@ export function TasksPanel({ isOpen, onClose, standalone = false }: TasksPanelPr
           role="dialog"
           aria-modal="true"
           aria-label="Tâches"
+          data-testid="tasks-panel"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}

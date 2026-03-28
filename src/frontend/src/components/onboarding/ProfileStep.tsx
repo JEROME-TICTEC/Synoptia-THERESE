@@ -226,17 +226,18 @@ export function ProfileStep({ onNext, onBack }: ProfileStepProps) {
 
       {/* Footer */}
       <div className="flex justify-between mt-6 pt-4 border-t border-border/30">
-        <Button variant="ghost" onClick={onBack}>
+        <Button variant="ghost" onClick={onBack} data-testid="onboarding-prev-btn">
           Retour
         </Button>
         <div className="flex gap-3">
-          <Button variant="ghost" onClick={handleSkip}>
+          <Button variant="ghost" onClick={handleSkip} data-testid="onboarding-skip-btn">
             Passer
           </Button>
           <Button
             variant="primary"
             onClick={handleSaveAndContinue}
             disabled={loading}
+            data-testid="onboarding-next-btn"
           >
             {loading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enregistrement en cours...</>) : 'Continuer'}
           </Button>

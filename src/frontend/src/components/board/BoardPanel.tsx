@@ -312,6 +312,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Board de décision"
+            data-testid="board-panel"
             variants={modalVariants}
             initial="initial"
             animate="animate"
@@ -474,6 +475,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
                       <button
                         onClick={handleStartDeliberation}
                         disabled={!question.trim()}
+                        data-testid="board-submit-btn"
                         className={cn(
                           'w-full py-3 px-6 rounded-xl font-semibold text-white',
                           'bg-accent-cyan hover:bg-accent-cyan/90',
@@ -495,6 +497,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
                 {viewState === 'deliberating' && (
                   <motion.div
                     key="deliberating"
+                    data-testid="board-result"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}

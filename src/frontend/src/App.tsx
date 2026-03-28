@@ -163,6 +163,7 @@ function App() {
       <div
         className="h-screen w-screen bg-bg text-text overflow-hidden"
         style={{ fontSize }}
+        data-testid="app-main"
         data-high-contrast={highContrast ? 'true' : undefined}
       >
         <UpdateBanner />

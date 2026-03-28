@@ -194,6 +194,7 @@ export function SecurityStep({ onNext, onBack }: SecurityStepProps) {
       <div className="flex gap-3 pt-2">
         <button
           onClick={onBack}
+          data-testid="onboarding-prev-btn"
           className={cn(
             'flex-1 px-4 py-3 rounded-xl font-medium',
             'bg-surface border border-border',
@@ -206,6 +207,7 @@ export function SecurityStep({ onNext, onBack }: SecurityStepProps) {
         <button
           onClick={onNext}
           disabled={!acknowledged}
+          data-testid="onboarding-next-btn"
           className={cn(
             'flex-1 flex items-center justify-center gap-2',
             'px-4 py-3 rounded-xl font-medium',

@@ -126,6 +126,7 @@ export function UpdateBanner() {
     <div
       role="status"
       aria-live="polite"
+      data-testid="update-banner"
       className="relative flex items-center justify-center gap-3 px-4 py-2 text-sm"
       style={{
         background: state.phase === 'error'
@@ -146,6 +147,7 @@ export function UpdateBanner() {
           </span>
           <button
             onClick={handleDownloadAndInstall}
+            data-testid="update-install-btn"
             className="ml-2 px-3 py-1 rounded-md text-xs font-medium transition-colors"
             style={{
               background: 'rgba(34, 211, 238, 0.2)',
@@ -184,6 +186,7 @@ export function UpdateBanner() {
           </span>
           <button
             onClick={handleRestart}
+            data-testid="update-restart-btn"
             className="ml-2 px-3 py-1 rounded-md text-xs font-medium transition-colors"
             style={{
               background: 'rgba(34, 211, 238, 0.2)',

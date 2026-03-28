@@ -153,6 +153,7 @@ export function OnboardingWizard({ isOpen, onComplete }: OnboardingWizardProps) 
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            data-testid="onboarding-wizard"
             className="relative w-full max-w-2xl max-h-[90vh] bg-surface border border-border/50 rounded-2xl shadow-2xl flex flex-col mt-10"
           >
             {/* Progress Header */}
@@ -228,12 +229,12 @@ export function OnboardingWizard({ isOpen, onComplete }: OnboardingWizardProps) 
                   transition={{ duration: 0.3 }}
                   className="h-full"
                 >
-                  {currentStep === 0 && <WelcomeStep onNext={goNext} />}
-                  {currentStep === 1 && <ProfileStep onNext={goNext} onBack={goBack} />}
-                  {currentStep === 2 && <LLMStep onNext={goNext} onBack={goBack} />}
-                  {currentStep === 3 && <SecurityStep onNext={goNext} onBack={goBack} />}
-                  {currentStep === 4 && <WorkingDirStep onNext={goNext} onBack={goBack} />}
-                  {currentStep === 5 && <CompleteStep onComplete={handleComplete} onBack={goBack} />}
+                  {currentStep === 0 && <div data-testid="onboarding-step-0"><WelcomeStep onNext={goNext} /></div>}
+                  {currentStep === 1 && <div data-testid="onboarding-step-1"><ProfileStep onNext={goNext} onBack={goBack} /></div>}
+                  {currentStep === 2 && <div data-testid="onboarding-step-2"><LLMStep onNext={goNext} onBack={goBack} /></div>}
+                  {currentStep === 3 && <div data-testid="onboarding-step-3"><SecurityStep onNext={goNext} onBack={goBack} /></div>}
+                  {currentStep === 4 && <div data-testid="onboarding-step-4"><WorkingDirStep onNext={goNext} onBack={goBack} /></div>}
+                  {currentStep === 5 && <div data-testid="onboarding-step-5"><CompleteStep onComplete={handleComplete} onBack={goBack} /></div>}
                 </motion.div>
               </AnimatePresence>
             </div>

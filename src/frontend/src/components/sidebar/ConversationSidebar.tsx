@@ -144,13 +144,14 @@ export function ConversationSidebar({ isOpen, onClose }: ConversationSidebarProp
             initial="initial"
             animate="animate"
             exit="exit"
+            data-testid="sidebar"
             className="fixed left-0 top-0 bottom-0 w-[320px] bg-surface border-r border-border z-50 flex flex-col shadow-2xl"
           >
             {/* Header */}
             <div className="h-14 flex items-center justify-between px-4 border-b border-border/50">
               <h2 className="text-lg font-semibold text-text">Conversations</h2>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" onClick={handleNewConversation} title="Nouvelle conversation">
+                <Button variant="ghost" size="icon" onClick={handleNewConversation} title="Nouvelle conversation" data-testid="sidebar-new-conversation-btn">
                   <Plus className="w-5 h-5" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={onClose}>
@@ -168,13 +169,14 @@ export function ConversationSidebar({ isOpen, onClose }: ConversationSidebarProp
                   placeholder="Rechercher..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  data-testid="sidebar-search-input"
                   className="w-full pl-10 pr-4 py-2 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent-cyan/50 transition-colors"
                 />
               </div>
             </div>
 
             {/* Conversations list */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto" data-testid="sidebar-conversation-list">
               {filteredConversations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-text-muted">
                   <MessageSquare className="w-8 h-8 mb-2 opacity-50" />
@@ -341,17 +343,20 @@ function ConversationItem({
   }, [conversation.title]);
 
   return (
-    <div className="relative px-2">
-      <button
+    <div className="relative px-2" data-testid="sidebar-conversation-item">
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onSelect}
         onContextMenu={onContextMenu}
         onDoubleClick={handleDoubleClick}
-        disabled={isDeleting || isEditing}
-        className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left group ${
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
+        aria-disabled={isDeleting || isEditing}
+        className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left group cursor-pointer ${
           isActive
             ? 'bg-accent-cyan/10 border border-accent-cyan/30'
             : 'hover:bg-background/40 border border-transparent'
-        } ${isDeleting ? 'opacity-50' : ''}`}
+        } ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
       >
         {/* Icon */}
         <div
@@ -404,7 +409,7 @@ function ConversationItem({
         >
           <MoreHorizontal className="w-4 h-4 text-text-muted" />
         </button>
-      </button>
+      </div>
 
       {/* Context menu */}
       <AnimatePresence>

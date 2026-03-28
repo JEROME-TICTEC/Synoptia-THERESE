@@ -574,6 +574,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Paramètres"
+            data-testid="settings-modal"
             variants={modalVariants}
             initial="initial"
             animate="animate"
@@ -583,7 +584,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* En-tête */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
               <h2 className="text-lg font-semibold text-text">Paramètres</h2>
-              <Button variant="ghost" size="icon" onClick={onClose}>
+              <Button variant="ghost" size="icon" onClick={onClose} data-testid="settings-close-btn">
                 <X className="w-5 h-5" />
               </Button>
             </div>
@@ -598,6 +599,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   return (
                     <button
                       key={tab.id}
+                      data-testid={`settings-tab-${tab.id}`}
                       onClick={() => { setActiveTab(tab.id); setError(null); }}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                         isActive
@@ -628,6 +630,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   variant="primary"
                   onClick={handleSaveProfile}
                   disabled={profileSaving || !profileForm.name.trim()}
+                  data-testid="settings-save-btn"
                 >
                   {profileSaving ? (
                     <>

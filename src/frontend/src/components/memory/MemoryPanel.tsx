@@ -190,6 +190,7 @@ export function MemoryPanel({ isOpen, onClose, onNewContact, onEditContact }: Me
             initial="initial"
             animate="animate"
             exit="exit"
+            data-testid="memory-panel"
             className="fixed right-0 top-0 bottom-0 w-[420px] bg-surface border-l border-border z-50 flex flex-col shadow-2xl"
           >
             {/* Header */}
@@ -236,6 +237,7 @@ export function MemoryPanel({ isOpen, onClose, onNewContact, onEditContact }: Me
                     placeholder="Rechercher..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    data-testid="memory-search-input"
                     className="w-full pl-10 pr-4 py-2 bg-background/60 border border-border/50 rounded-lg text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent-cyan/50 transition-colors"
                   />
                 </div>
@@ -503,6 +505,7 @@ export function MemoryPanel({ isOpen, onClose, onNewContact, onEditContact }: Me
                   variant="primary"
                   className="w-full"
                   onClick={onNewContact}
+                  data-testid="memory-add-contact-btn"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Nouveau contact

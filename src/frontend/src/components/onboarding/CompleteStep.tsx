@@ -209,7 +209,7 @@ export function CompleteStep({ onComplete, onBack }: CompleteStepProps) {
 
       {/* Footer */}
       <div className="flex justify-between w-full pt-4 border-t border-border/30">
-        <Button variant="ghost" onClick={onBack}>
+        <Button variant="ghost" onClick={onBack} data-testid="onboarding-prev-btn">
           Retour
         </Button>
         <Button
@@ -217,6 +217,7 @@ export function CompleteStep({ onComplete, onBack }: CompleteStepProps) {
           onClick={handleComplete}
           disabled={completing}
           className="px-8"
+          data-testid="onboarding-complete-btn"
         >
           {completing ? 'Démarrage...' : 'Commencer'}
         </Button>

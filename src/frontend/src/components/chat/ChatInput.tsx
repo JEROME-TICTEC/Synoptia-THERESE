@@ -776,6 +776,7 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
         <Button
           variant="ghost"
           size="icon"
+          data-testid="chat-attach-btn"
           className="flex-shrink-0 h-9 w-9"
           disabled={isDisabled}
           onClick={handleAttachClick}
@@ -790,6 +791,7 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
           <textarea
             id="chat-input"
             ref={textareaRef}
+            data-testid="chat-message-input"
             value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
@@ -827,6 +829,7 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
         <Button
           variant={isRecording ? 'primary' : 'ghost'}
           size="icon"
+          data-testid="chat-voice-btn"
           className={cn(
             'flex-shrink-0 h-9 w-9 transition-all',
             isRecording && 'bg-error hover:bg-error/90 animate-pulse',
@@ -882,6 +885,7 @@ export function ChatInput({ onOpenCommandPalette, initialPrompt, initialSkillId,
         <Button
           variant="primary"
           size="icon"
+          data-testid="chat-send-btn"
           className="flex-shrink-0 h-9 w-9"
           onClick={sendMessage}
           disabled={isDisabled || !input.trim()}

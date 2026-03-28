@@ -200,7 +200,7 @@ export function ChatHeader({
           <Zap className="w-4 h-4 text-purple-400" />
         </Button>
         <NotificationCenter />
-        <Button variant="ghost" size="icon" title="Paramètres" onClick={onOpenSettings}>
+        <Button variant="ghost" size="icon" title="Paramètres" onClick={onOpenSettings} data-testid="settings-btn">
           <Settings className="w-5 h-5" />
         </Button>
 
