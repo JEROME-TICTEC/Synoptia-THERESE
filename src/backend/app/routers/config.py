@@ -959,7 +959,7 @@ async def get_llm_config(session: AsyncSession = Depends(get_session)):
                     m.get("name", "") for m in data.get("models", [])
                     if m.get("name") and _categorize_ollama_model(m["name"]) == "chat"
                 ]
-        except Exception as e:
+        except Exception:
             # Ollama non disponible - liste vide, pas d'erreur
             available_models = []
 
@@ -1003,7 +1003,7 @@ async def set_llm_config(
         if is_value_encrypted(pref_value):
             try:
                 return decrypt_value(pref_value)
-            except Exception as e:
+            except Exception:
                 logger.warning("Échec déchiffrement clé API dans set_llm_config")
                 return None
         return pref_value

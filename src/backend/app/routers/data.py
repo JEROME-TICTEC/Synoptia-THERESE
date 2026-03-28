@@ -377,7 +377,7 @@ async def delete_all_data(
         qdrant = get_qdrant_service()
         if qdrant.client:
             qdrant.client.delete_collection(settings.qdrant_collection)
-    except Exception as e:
+    except Exception:
         logger.warning("Impossible de purger la collection Qdrant")
 
     logger.warning("Toutes les donnees utilisateur ont ete supprimees (RGPD)")

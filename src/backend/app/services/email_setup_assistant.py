@@ -96,7 +96,7 @@ class EmailSetupAssistant:
                             source='mcp'
                         )
                         break
-        except Exception as e:
+        except Exception:
             # MCP service not available or no Google server configured
             pass
 

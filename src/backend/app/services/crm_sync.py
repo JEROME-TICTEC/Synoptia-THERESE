@@ -574,7 +574,7 @@ async def ensure_valid_crm_token(session: AsyncSession) -> str | None:
 
     try:
         refresh_token = decrypt_value(refresh_pref.value)
-    except Exception as e:
+    except Exception:
         logger.error("Impossible de déchiffrer le refresh token CRM")
         return access_token
 

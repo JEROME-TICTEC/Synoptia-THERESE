@@ -31,6 +31,8 @@ except ImportError:
     HAS_SLOWAPI = False
     import time as _time
     from collections import defaultdict as _defaultdict
+# Configure structured logging (US-014)
+from app.core.logging_config import setup_logging
 from app.models.database import close_db, init_db
 from app.routers import (
     agents_router,  # v0.5 - Agents IA Embarqués (Atelier)
@@ -43,6 +45,7 @@ from app.routers import (
     commands_v3_router,  # V3 - Commands unifiées
     config_router,
     crm_router,  # Phase 5 - Implemented
+    dashboard_router,  # US-005 - Dashboard Ma journée
     data_router,
     email_router,  # Phase 1 - ACTIVATED
     email_setup_router,  # Phase 1.2 - Email Setup Wizard
@@ -52,22 +55,19 @@ from app.routers import (
     invoices_router,  # Phase 4 - ACTIVATED
     mcp_router,
     memory_router,
+    notifications_router,  # US-004 - Notifications push in-app
     perf_router,
     personalisation_router,
     rgpd_router,  # Phase 6 - RGPD Compliance
     skills_router,
     tasks_router,  # Phase 3 - ACTIVATED
     tools_router,  # V3 - Installed Tools
-    notifications_router,  # US-004 - Notifications push in-app
-    dashboard_router,  # US-005 - Dashboard Ma journée
     voice_router,
 )
 from app.services import close_qdrant, init_qdrant
 from app.services.mcp_service import get_mcp_service, initialize_mcp_service
 from app.services.skills import close_skills, init_skills
 
-# Configure structured logging (US-014)
-from app.core.logging_config import setup_logging
 setup_logging()
 
 # Legacy basicConfig remplacé par setup_logging() ci-dessus
@@ -690,7 +690,7 @@ async def service_status():
 
         service = get_qdrant_service()
         service.get_stats()
-    except Exception as e:
+    except Exception:
         qdrant_available = False
 
     status.set_available("qdrant", qdrant_available)
@@ -702,7 +702,7 @@ async def service_status():
 
         async with get_session_context() as session:
             await session.execute("SELECT 1")
-    except Exception as e:
+    except Exception:
         db_available = False
 
     status.set_available("database", db_available)

@@ -23,6 +23,9 @@ from app.routers.config import router as config_router
 
 # Phase 5 CRM (implemented)
 from app.routers.crm import router as crm_router
+
+# US-005 - Dashboard "Ma journée" (v0.9.0)
+from app.routers.dashboard import router as dashboard_router
 from app.routers.data import router as data_router
 
 # Phase 1-4 routers (ACTIVATED)
@@ -36,6 +39,9 @@ from app.routers.images import router as images_router
 from app.routers.invoices import router as invoices_router
 from app.routers.mcp import router as mcp_router
 from app.routers.memory import router as memory_router
+
+# US-004 - Notifications push in-app (v0.9.0)
+from app.routers.notifications import router as notifications_router
 from app.routers.performance import router as perf_router
 from app.routers.personalisation import router as personalisation_router
 
@@ -47,11 +53,6 @@ from app.routers.tasks import router as tasks_router
 # V3 - Installed Tools
 from app.routers.tools import router as tools_router
 from app.routers.voice import router as voice_router
-
-# US-004 - Notifications push in-app (v0.9.0)
-from app.routers.notifications import router as notifications_router
-# US-005 - Dashboard "Ma journée" (v0.9.0)
-from app.routers.dashboard import router as dashboard_router
 
 __all__ = [
     "chat_router",

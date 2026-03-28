@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import AsyncGenerator
 
-from app.services.circuit_breaker import CircuitState, get_circuit_breaker
+from app.services.circuit_breaker import get_circuit_breaker
 from app.services.context import ContextWindow
 
 # Re-export types for backward compatibility
@@ -71,7 +71,7 @@ async def load_api_key_cache() -> None:
                     if encryption.is_encrypted(value):
                         try:
                             value = encryption.decrypt(value)
-                        except Exception as e:
+                        except Exception:
                             logger.warning(f"Decryption failed for {pref_key}, skipping")
                             continue
                     _api_key_cache[pref_key] = value

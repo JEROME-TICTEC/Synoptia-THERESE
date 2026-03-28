@@ -14,6 +14,8 @@ from app.models.schemas_agents import (
     AgentConfigResponse,
     AgentConfigUpdate,
     AgentRequest,
+    AgentSessionListResponse,
+    AgentSessionResponse,
     AgentStatusResponse,
     AgentStreamChunk,
     AgentTaskListResponse,
@@ -21,11 +23,9 @@ from app.models.schemas_agents import (
     DiffFileResponse,
     DiffResponse,
     DispatchRequest,
-    SendMessageRequest,
-    AgentSessionResponse,
-    AgentSessionListResponse,
-    SessionMessageResponse,
     OpenClawStatusResponse,
+    SendMessageRequest,
+    SessionMessageResponse,
 )
 from app.services.agents.git_service import GitService
 from app.services.agents.swarm import SwarmOrchestrator
@@ -590,8 +590,6 @@ async def dispatch_to_openclaw(
     Crée une AgentSession en DB et spawn une session OpenClaw.
     Limite le nombre d agents en parallèle (US-003).
     """
-    from app.models.entities_agents import AgentSession
-    from app.models.schemas_agents import AgentSessionResponse, DispatchRequest
     from app.services.openclaw_bridge import spawn_session
 
     # US-003 : vérifier la limite d agents en parallèle
@@ -676,8 +674,6 @@ async def list_openclaw_sessions(
     session: AsyncSession = Depends(get_session),
 ):
     """Liste les sessions OpenClaw."""
-    from app.models.entities_agents import AgentSession
-    from app.models.schemas_agents import AgentSessionListResponse, AgentSessionResponse
 
     query = select(AgentSession).order_by(AgentSession.created_at.desc()).limit(limit)
     if status:
@@ -714,8 +710,6 @@ async def get_openclaw_session(
     session: AsyncSession = Depends(get_session),
 ):
     """Détail d une session OpenClaw."""
-    from app.models.entities_agents import AgentSession
-    from app.models.schemas_agents import AgentSessionResponse
 
     result = await session.execute(
         select(AgentSession).where(AgentSession.id == session_id)
@@ -760,8 +754,6 @@ async def get_openclaw_session_messages(
     session: AsyncSession = Depends(get_session),
 ):
     """Messages d une session OpenClaw."""
-    from app.models.entities_agents import AgentSession
-    from app.models.schemas_agents import SessionMessageResponse
 
     result = await session.execute(
         select(AgentSession).where(AgentSession.id == session_id)
@@ -793,8 +785,6 @@ async def send_to_openclaw_session(
     session: AsyncSession = Depends(get_session),
 ):
     """Envoie un message à un agent dans une session OpenClaw."""
-    from app.models.entities_agents import AgentSession
-    from app.models.schemas_agents import SendMessageRequest
 
     result = await session.execute(
         select(AgentSession).where(AgentSession.id == session_id)
@@ -828,7 +818,6 @@ async def cancel_openclaw_session(
     session: AsyncSession = Depends(get_session),
 ):
     """Annule une session OpenClaw."""
-    from app.models.entities_agents import AgentSession
 
     result = await session.execute(
         select(AgentSession).where(AgentSession.id == session_id)
@@ -861,7 +850,6 @@ async def get_running_sessions_count(
     session: AsyncSession = Depends(get_session),
 ):
     """Retourne le nombre de sessions en cours (US-003)."""
-    from app.models.entities_agents import AgentSession
 
     result = await session.execute(
         select(func.count(AgentSession.id)).where(AgentSession.status == "running")
@@ -873,7 +861,6 @@ async def get_running_sessions_count(
 @router.get("/openclaw/status")
 async def get_openclaw_status():
     """Vérifie la connexion OpenClaw et liste les agents disponibles."""
-    from app.models.schemas_agents import OpenClawStatusResponse
     from app.services.openclaw_bridge import OPENCLAW_API_URL, check_connection, list_agents
 
     connected = await check_connection()

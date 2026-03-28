@@ -355,7 +355,7 @@ class CalDAVProvider(CalendarProvider):
             event = None
             try:
                 event = cal.event_by_uid(event_id)
-            except Exception as e:
+            except Exception:
                 for e in cal.events():
                     if self._get_event_uid(e) == event_id:
                         event = e

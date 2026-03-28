@@ -1205,7 +1205,7 @@ async def sync_crm(
             try:
                 api_key = decrypt_value(gemini_pref.value)
                 logger.info("Using Gemini API key for CRM sync")
-            except Exception as e:
+            except Exception:
                 logger.warning("Échec déchiffrement clé Gemini pour CRM sync")
                 api_key = None
 
