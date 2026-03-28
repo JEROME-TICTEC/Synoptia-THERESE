@@ -203,10 +203,17 @@ export function InvoiceForm({ invoice, onClose, onSave }: InvoiceFormProps) {
       return;
     }
 
-    if (normalizedLines.some((line) => line.quantity < 1 || line.unit_price_ht < 0)) {
+    if (normalizedLines.some((line) => line.quantity! < 1 || line.unit_price_ht! < 0)) {
       alert('Veuillez saisir une quantité supérieure ou égale à 1 et un prix positif ou nul');
       return;
     }
+
+    // À ce stade, null est exclu par les guards ci-dessus
+    const validLines = normalizedLines.map((line) => ({
+      ...line,
+      quantity: line.quantity as number,
+      unit_price_ht: line.unit_price_ht as number,
+    }));
 
     setIsSaving(true);
 
@@ -217,7 +224,7 @@ export function InvoiceForm({ invoice, onClose, onSave }: InvoiceFormProps) {
         currency,
         issue_date: issueDate,
         due_date: dueDate,
-        lines: normalizedLines,
+        lines: validLines,
         notes: notes || undefined,
         status: status !== 'draft' ? status : undefined,
       };
