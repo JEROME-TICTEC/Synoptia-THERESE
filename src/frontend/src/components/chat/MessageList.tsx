@@ -1,6 +1,5 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { useChatStore } from '../../stores/chatStore';
 import { useAccessibilityStore } from '../../stores/accessibilityStore';
 import { announceToScreenReader } from '../../lib/accessibility';
@@ -26,10 +25,11 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
   const reduceMotion = useAccessibilityStore((s) => s.reduceMotion);
   const announceMessages = useAccessibilityStore((s) => s.announceMessages);
   const prevMsgCountRef = useRef(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // Compute current conversation from subscribed state
   const conversation = conversations.find((c) => c.id === currentConversationId) || null;
-  const virtuosoRef = useRef<VirtuosoHandle>(null);
 
   const handleEntityDismiss = useCallback((messageId: string) => {
     clearMessageEntities(messageId);
@@ -62,59 +62,12 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
     }));
   }, [demoEnabled, conversation, maskText]);
 
-  // followOutput : scroller automatiquement quand un nouveau message arrive
-  const followOutput = useCallback((isAtBottom: boolean) => {
-    if (isAtBottom) {
-      return 'smooth' as const;
+  // Auto-scroll vers le bas quand un nouveau message arrive
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: isStreaming ? 'auto' : 'smooth' });
     }
-    return false as const;
-  }, []);
-
-  // Rendu d'un item dans la liste virtualisée
-  const itemContent = useCallback((index: number) => {
-    const message = displayMessages[index];
-    if (!message) return null;
-
-    return (
-      <div
-        className="py-2"
-        data-testid="chat-message-item"
-      >
-        <MessageBubble
-          message={message}
-          onSaveAsCommand={
-            message.role === 'assistant' && !message.isStreaming && onSaveAsCommand
-              ? () => {
-                  const msgIndex = displayMessages.indexOf(message);
-                  let userPrompt = '';
-                  for (let i = msgIndex - 1; i >= 0; i--) {
-                    if (displayMessages[i].role === 'user') {
-                      userPrompt = displayMessages[i].content;
-                      break;
-                    }
-                  }
-                  onSaveAsCommand(userPrompt, message.content);
-                }
-              : undefined
-          }
-        />
-
-        {/* Show entity suggestions after assistant messages */}
-        {message.role === 'assistant' && message.detectedEntities && (
-          (message.detectedEntities.contacts.length > 0 ||
-            message.detectedEntities.projects.length > 0) && (
-            <EntitySuggestion
-              contacts={message.detectedEntities.contacts}
-              projects={message.detectedEntities.projects}
-              messageId={message.id}
-              onDismiss={() => handleEntityDismiss(message.id)}
-              onSaved={handleEntitySaved}
-            />
-          )
-        )}
-      </div>
-    );
-  }, [displayMessages, onSaveAsCommand, handleEntityDismiss, handleEntitySaved]);
+  }, [displayMessages.length, displayMessages[displayMessages.length - 1]?.content, isStreaming]);
 
   // Empty state with guided prompts UI
   if (!conversation || conversation.messages.length === 0) {
@@ -126,46 +79,70 @@ export function MessageList({ onPromptSelect, onSaveAsCommand, onGuidedPanelChan
   }
 
   return (
-    <div className="h-full" aria-live="polite" aria-label="Messages de la conversation" data-testid="chat-message-list">
-      <Virtuoso
-        ref={virtuosoRef}
-        key={`virtuoso-${currentConversationId}`}
-        data={displayMessages}
-        totalCount={displayMessages.length}
-        overscan={200}
-        followOutput={followOutput}
-        initialTopMostItemIndex={displayMessages.length - 1}
-        alignToBottom
-        itemContent={itemContent}
-        className="h-full [&_[data-testid=virtuoso-item-list]]:!visible"
-        style={{ height: '100%' }}
-        components={{
-          // Wrapper pour le contenu scrollable avec le bon max-width
-          List: ({ style, children, ...props }) => (
-            <div {...props} style={style}>
-              <div className="max-w-3xl mx-auto px-4 py-6">
-                {children}
-              </div>
-            </div>
-          ),
-          // Footer : typing indicator + ancre scroll
-          Footer: () => (
-            <div className="max-w-3xl mx-auto px-4">
-              <AnimatePresence>
-                {isStreaming && (
-                  <motion.div
-                    initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <TypingIndicator />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ),
-        }}
-      />
+    <div
+      ref={scrollRef}
+      className="h-full overflow-y-auto"
+      aria-live="polite"
+      aria-label="Messages de la conversation"
+      data-testid="chat-message-list"
+    >
+      <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col">
+        {displayMessages.map((message, index) => (
+          <div
+            key={message.id || index}
+            className="py-2"
+            data-testid="chat-message-item"
+          >
+            <MessageBubble
+              message={message}
+              onSaveAsCommand={
+                message.role === 'assistant' && !message.isStreaming && onSaveAsCommand
+                  ? () => {
+                      let userPrompt = '';
+                      for (let i = index - 1; i >= 0; i--) {
+                        if (displayMessages[i].role === 'user') {
+                          userPrompt = displayMessages[i].content;
+                          break;
+                        }
+                      }
+                      onSaveAsCommand(userPrompt, message.content);
+                    }
+                  : undefined
+              }
+            />
+
+            {/* Show entity suggestions after assistant messages */}
+            {message.role === 'assistant' && message.detectedEntities && (
+              (message.detectedEntities.contacts.length > 0 ||
+                message.detectedEntities.projects.length > 0) && (
+                <EntitySuggestion
+                  contacts={message.detectedEntities.contacts}
+                  projects={message.detectedEntities.projects}
+                  messageId={message.id}
+                  onDismiss={() => handleEntityDismiss(message.id)}
+                  onSaved={handleEntitySaved}
+                />
+              )
+            )}
+          </div>
+        ))}
+
+        {/* Typing indicator */}
+        <AnimatePresence>
+          {isStreaming && (
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <TypingIndicator />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Scroll anchor */}
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 }
