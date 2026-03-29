@@ -37,7 +37,10 @@ export function EmailCompose() {
   }, [draftRecipients]);
 
   async function handleSend() {
-    if (!currentAccountId) return;
+    if (!currentAccountId) {
+      setError('Aucun compte email configuré. Ajoute un compte dans les paramètres.');
+      return;
+    }
 
     const recipients = toInput
       .split(',')
@@ -76,7 +79,10 @@ export function EmailCompose() {
   }
 
   async function handleSaveDraft() {
-    if (!currentAccountId) return;
+    if (!currentAccountId) {
+      setError('Aucun compte email configuré. Ajoute un compte dans les paramètres.');
+      return;
+    }
 
     const recipients = toInput
       .split(',')
