@@ -74,6 +74,16 @@ export function UpdateBanner() {
       const version = update.version;
       setState({ phase: 'downloading', version, progress: 0 });
 
+      // BUG-099 : Arrêter le backend sidecar AVANT l'installation
+      // pour éviter le verrou backend.exe sur Windows
+      try {
+        await fetch('http://localhost:17293/api/shutdown', { method: 'POST' });
+        // Attendre que le process se termine
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch {
+        // Backend peut déjà être arrêté ou indisponible - on continue
+      }
+
       let contentLength = 0;
       let downloaded = 0;
 
