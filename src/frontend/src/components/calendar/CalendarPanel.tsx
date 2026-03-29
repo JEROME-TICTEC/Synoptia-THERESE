@@ -26,6 +26,7 @@ import { EventForm } from './EventForm';
 import { EventDetail } from './EventDetail';
 import { Button } from '../ui/Button';
 import * as api from '../../services/api';
+import { useStatusStore } from '../../stores/statusStore';
 
 interface CalendarPanelProps {
   isOpen?: boolean;
@@ -200,14 +201,15 @@ export function CalendarPanel({ isOpen, onClose, standalone = false }: CalendarP
   async function handleImportICS(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const addNotification = useStatusStore.getState().addNotification;
     try {
       const result = await api.importICSFile(file);
-      alert(result.message);
+      addNotification({ type: 'success', title: 'Import ICS', message: result.message });
       // Recharger les événements
       await loadCalendars();
       if (currentCalendarId) await loadEvents();
     } catch (err: any) {
-      alert(`Erreur d'import : ${err.message}`);
+      addNotification({ type: 'error', title: 'Erreur import', message: err.message });
     }
     // Reset l'input pour permettre de reimporter le même fichier
     e.target.value = '';

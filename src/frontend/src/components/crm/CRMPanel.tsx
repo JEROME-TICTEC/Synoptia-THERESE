@@ -15,6 +15,7 @@ import { useCRMStore } from '../../stores/crmStore';
 import { listContacts, listProjects, listActivities, updateContactStage, type ContactResponse, type ActivityResponse } from '../../services/api';
 import { createCRMContact, importVCFContacts, type CreateCRMContactRequest } from '../../services/api/crm';
 import { useDemoMask } from '../../hooks';
+import { useStatusStore } from '../../stores/statusStore';
 
 interface CRMPanelProps {
   isOpen?: boolean;
@@ -97,12 +98,13 @@ export function CRMPanel({ isOpen, onClose, standalone = false }: CRMPanelProps)
   const handleImportVCF = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const addNotification = useStatusStore.getState().addNotification;
     try {
       const result = await importVCFContacts(file);
-      alert(result.message);
+      addNotification({ type: 'success', title: 'Import VCF', message: result.message });
       await loadContacts();
     } catch (err: any) {
-      alert(`Erreur d'import : ${err.message}`);
+      addNotification({ type: 'error', title: 'Erreur import', message: err.message });
     }
     e.target.value = '';
   };
