@@ -27,6 +27,7 @@ import { EventDetail } from './EventDetail';
 import { Button } from '../ui/Button';
 import * as api from '../../services/api';
 import { useStatusStore } from '../../stores/statusStore';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface CalendarPanelProps {
   isOpen?: boolean;
@@ -401,7 +402,7 @@ export function CalendarPanel({ isOpen, onClose, standalone = false }: CalendarP
           BUG-049 : le dropdown passait derrière les autres composants sur Windows/Linux.
           Cause : stacking context bas (body overflow:hidden + conteneur sans z-index).
           Fix : wrapper relative z-[100] force le dropdown au-dessus de toute la pile CSS. */}
-      <div className="relative z-[100]">
+      <div className={`relative ${Z_LAYER.ONBOARDING}`}>
         <select
           value={currentCalendarId || ''}
           onChange={(e) => setCurrentCalendar(e.target.value)}
@@ -486,7 +487,7 @@ export function CalendarPanel({ isOpen, onClose, standalone = false }: CalendarP
   // Mode modal
   return (
     <AnimatePresence>
-      <div data-testid="calendar-panel" className="fixed inset-0 z-50 flex items-center justify-center">
+      <div data-testid="calendar-panel" className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center`}>
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}

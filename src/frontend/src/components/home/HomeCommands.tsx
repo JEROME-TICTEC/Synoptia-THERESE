@@ -15,6 +15,7 @@ import { CommandCard } from './CommandCard';
 import { RFCWizard } from '../rfc/RFCWizard';
 import type { CommandDefinition } from '../../types/command';
 import { cn } from '../../lib/utils';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface HomeCommandsProps {
   onPromptSelect: (prompt: string) => void;
@@ -249,7 +250,7 @@ export function HomeCommands({ onPromptSelect, onGuidedPanelChange }: HomeComman
                         </button>
                         {/* Menu de déplacement */}
                         {showMoveMenuId === cmd.id && (
-                          <div className="absolute top-full left-0 mt-1 z-20 bg-surface border border-border rounded-lg shadow-xl py-1 min-w-[140px]">
+                          <div className={`absolute top-full left-0 mt-1 ${Z_LAYER.DROPDOWN} bg-surface border border-border rounded-lg shadow-xl py-1 min-w-[140px]`}>
                             {CATEGORY_BLOCKS.filter((cat) => cat.id !== selectedCategory.id).map((cat) => (
                               <button
                                 key={cat.id}

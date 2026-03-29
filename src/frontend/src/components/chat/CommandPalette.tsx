@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useChatStore } from '../../stores/chatStore';
+import { Z_LAYER } from '../../styles/z-layers';
 
 export interface Command {
   id: string;
@@ -320,7 +321,7 @@ export function CommandPalette({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-start justify-center pt-[15vh]"
+          className={`fixed inset-0 ${Z_LAYER.COMMAND_PALETTE} flex items-start justify-center pt-[15vh]`}
           onClick={onClose}
         >
           {/* Backdrop with fade animation */}

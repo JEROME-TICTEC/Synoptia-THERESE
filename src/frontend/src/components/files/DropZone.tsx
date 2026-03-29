@@ -7,6 +7,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, File, FileText, FileCode, FileImage } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { Z_LAYER } from '../../styles/z-layers';
 
 export interface DropZoneProps {
   isDragging: boolean;
@@ -44,7 +45,7 @@ export function DropZone({ isDragging, className }: DropZoneProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
           className={cn(
-            'absolute inset-0 z-50 flex items-center justify-center',
+            'absolute inset-0', Z_LAYER.MODAL, 'flex items-center justify-center',
             'bg-background/90 backdrop-blur-sm',
             className
           )}

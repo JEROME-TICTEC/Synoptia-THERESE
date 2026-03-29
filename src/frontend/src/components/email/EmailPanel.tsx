@@ -33,6 +33,7 @@ import { EmailDetail } from './EmailDetail';
 import { EmailCompose } from './EmailCompose';
 import { EmailSetupWizard } from './wizard';
 import * as api from '../../services/api';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface EmailPanelProps {
   standalone?: boolean;
@@ -255,7 +256,7 @@ export function EmailPanel({ standalone = false }: EmailPanelProps) {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                   {showAccountMenu && (
-                    <div className="absolute top-full left-0 mt-1 bg-surface border border-border/50 rounded-lg shadow-xl py-1 z-20 min-w-[250px]">
+                    <div className={`absolute top-full left-0 mt-1 bg-surface border border-border/50 rounded-lg shadow-xl py-1 ${Z_LAYER.DROPDOWN} min-w-[250px]`}>
                       {accounts.map((acc) => (
                         <div key={acc.id} className="flex items-center">
                           <button
@@ -449,7 +450,7 @@ export function EmailPanel({ standalone = false }: EmailPanelProps) {
 
   // Mode modal (comportement original)
   return (
-    <div data-testid="email-panel" className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div data-testid="email-panel" className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center p-4`}>
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -488,7 +489,7 @@ export function EmailPanel({ standalone = false }: EmailPanelProps) {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                   {showAccountMenu && (
-                    <div className="absolute top-full left-0 mt-1 bg-surface border border-border/50 rounded-lg shadow-xl py-1 z-20 min-w-[250px]">
+                    <div className={`absolute top-full left-0 mt-1 bg-surface border border-border/50 rounded-lg shadow-xl py-1 ${Z_LAYER.DROPDOWN} min-w-[250px]`}>
                       {accounts.map((acc) => (
                         <div key={acc.id} className="flex items-center">
                           <button

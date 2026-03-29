@@ -7,6 +7,7 @@ import { FileBrowser } from '../files/FileBrowser';
 import * as api from '../../services/api';
 import type { MemoryScope, RGPDStatsResponse } from '../../services/api';
 import { useDemoMask } from '../../hooks';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface MemoryPanelProps {
   isOpen: boolean;
@@ -180,7 +181,7 @@ export function MemoryPanel({ isOpen, onClose, onNewContact, onEditContact }: Me
             animate="animate"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${Z_LAYER.BACKDROP}`}
             onClick={onClose}
           />
 
@@ -191,7 +192,7 @@ export function MemoryPanel({ isOpen, onClose, onNewContact, onEditContact }: Me
             animate="animate"
             exit="exit"
             data-testid="memory-panel"
-            className="fixed right-0 top-0 bottom-0 w-[420px] bg-surface border-l border-border z-50 flex flex-col shadow-2xl"
+            className={`fixed right-0 top-0 bottom-0 w-[420px] bg-surface border-l border-border ${Z_LAYER.MODAL} flex flex-col shadow-2xl`}
           >
             {/* Header */}
             <div className="h-14 flex items-center justify-between px-4 border-b border-border/50">
@@ -594,7 +595,7 @@ function ContactsList({
                     initial={{ opacity: 0, scale: 0.95, y: -5 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                    className="absolute right-0 top-full mt-1 w-48 bg-surface border border-border rounded-lg shadow-xl z-20 py-1"
+                    className={`absolute right-0 top-full mt-1 w-48 bg-surface border border-border rounded-lg shadow-xl ${Z_LAYER.DROPDOWN} py-1`}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button

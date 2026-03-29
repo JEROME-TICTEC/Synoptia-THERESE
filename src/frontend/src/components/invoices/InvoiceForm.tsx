@@ -12,6 +12,7 @@ import { X, Plus, Trash2, Save, FileCheck } from 'lucide-react';
 import { createInvoice, updateInvoice, convertDevisToInvoice, type Invoice, type InvoiceLineRequest, listContacts, type Contact, markInvoicePaid } from '../../services/api';
 import { useStatusStore } from '../../stores/statusStore';
 import { cn } from '../../lib/utils';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface InvoiceFormProps {
   invoice: Invoice | null;
@@ -298,7 +299,7 @@ export function InvoiceForm({ invoice, onClose, onSave }: InvoiceFormProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center"
+      className={`fixed inset-0 ${Z_LAYER.MODAL_NESTED} flex items-center justify-center`}
       onClick={onClose}
     >
       {/* Backdrop */}
