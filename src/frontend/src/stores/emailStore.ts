@@ -40,12 +40,16 @@ interface EmailStore {
   isEmailPanelOpen: boolean;
   isComposing: boolean;
   draftRecipients: string[];
+  draftCc: string[];
+  draftBcc: string[];
   draftSubject: string;
   draftBody: string;
   draftIsHtml: boolean;
   toggleEmailPanel: () => void;
   setIsComposing: (isComposing: boolean) => void;
   setDraftRecipients: (recipients: string[]) => void;
+  setDraftCc: (cc: string[]) => void;
+  setDraftBcc: (bcc: string[]) => void;
   setDraftSubject: (subject: string) => void;
   setDraftBody: (body: string) => void;
   setDraftIsHtml: (isHtml: boolean) => void;
@@ -125,18 +129,24 @@ export const useEmailStore = create<EmailStore>()(
       isEmailPanelOpen: false,
       isComposing: false,
       draftRecipients: [],
+      draftCc: [],
+      draftBcc: [],
       draftSubject: '',
       draftBody: '',
       draftIsHtml: false,
       toggleEmailPanel: () => set({ isEmailPanelOpen: !get().isEmailPanelOpen }),
       setIsComposing: (isComposing) => set({ isComposing }),
       setDraftRecipients: (recipients) => set({ draftRecipients: recipients }),
+      setDraftCc: (cc) => set({ draftCc: cc }),
+      setDraftBcc: (bcc) => set({ draftBcc: bcc }),
       setDraftSubject: (subject) => set({ draftSubject: subject }),
       setDraftBody: (body) => set({ draftBody: body }),
       setDraftIsHtml: (isHtml) => set({ draftIsHtml: isHtml }),
       clearDraft: () =>
         set({
           draftRecipients: [],
+          draftCc: [],
+          draftBcc: [],
           draftSubject: '',
           draftBody: '',
           draftIsHtml: false,
@@ -145,6 +155,8 @@ export const useEmailStore = create<EmailStore>()(
       startComposing: (recipients, subject, body) =>
         set({
           draftRecipients: recipients,
+          draftCc: [],
+          draftBcc: [],
           draftSubject: subject,
           draftBody: body,
           draftIsHtml: false,

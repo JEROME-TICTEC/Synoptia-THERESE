@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Send, X, Loader2, Paperclip } from 'lucide-react';
+import { Send, X, Loader2, Paperclip, ChevronDown, ChevronUp } from 'lucide-react';
 import { useEmailStore } from '../../stores/emailStore';
 import { Button } from '../ui/Button';
 import * as api from '../../services/api';
@@ -15,6 +15,8 @@ export function EmailCompose() {
   const {
     currentAccountId,
     draftRecipients,
+    draftCc,
+    draftBcc,
     draftSubject,
     draftBody,
     draftIsHtml,
@@ -25,6 +27,9 @@ export function EmailCompose() {
   } = useEmailStore();
 
   const [toInput, setToInput] = useState(draftRecipients.join(', '));
+  const [ccInput, setCcInput] = useState(draftCc.join(', '));
+  const [bccInput, setBccInput] = useState(draftBcc.join(', '));
+  const [showCcBcc, setShowCcBcc] = useState(draftCc.length > 0 || draftBcc.length > 0);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -36,13 +41,19 @@ export function EmailCompose() {
     }
   }, [draftRecipients]);
 
-  async function handleSend() {
-    if (!currentAccountId) return;
+  function parseRecipients(input: string): string[] {
+    return input.split(',').map((r) => r.trim()).filter((r) => r);
+  }
 
-    const recipients = toInput
-      .split(',')
-      .map((r) => r.trim())
-      .filter((r) => r);
+  async function handleSend() {
+    if (!currentAccountId) {
+      setError('Aucun compte email configuré. Ajoute un compte dans les paramètres.');
+      return;
+    }
+
+    const recipients = parseRecipients(toInput);
+    const ccList = parseRecipients(ccInput);
+    const bccList = parseRecipients(bccInput);
 
     if (recipients.length === 0) {
       setError('Ajoute au moins un destinataire');
@@ -60,6 +71,8 @@ export function EmailCompose() {
     try {
       await api.sendEmail(currentAccountId, {
         to: recipients,
+        cc: ccList.length > 0 ? ccList : undefined,
+        bcc: bccList.length > 0 ? bccList : undefined,
         subject: draftSubject,
         body: draftBody,
         html: draftIsHtml,
@@ -76,12 +89,14 @@ export function EmailCompose() {
   }
 
   async function handleSaveDraft() {
-    if (!currentAccountId) return;
+    if (!currentAccountId) {
+      setError('Aucun compte email configuré.');
+      return;
+    }
 
-    const recipients = toInput
-      .split(',')
-      .map((r) => r.trim())
-      .filter((r) => r);
+    const recipients = parseRecipients(toInput);
+    const ccList = parseRecipients(ccInput);
+    const bccList = parseRecipients(bccInput);
 
     if (recipients.length === 0 || !draftSubject.trim()) {
       setError('Remplis au moins le destinataire et l\'objet');
@@ -94,6 +109,8 @@ export function EmailCompose() {
     try {
       await api.createDraft(currentAccountId, {
         to: recipients,
+        cc: ccList.length > 0 ? ccList : undefined,
+        bcc: bccList.length > 0 ? bccList : undefined,
         subject: draftSubject,
         body: draftBody,
         html: draftIsHtml,
@@ -151,8 +168,45 @@ export function EmailCompose() {
               placeholder="destinataire@example.com, ..."
               className="flex-1 px-3 py-2 bg-transparent text-sm text-text placeholder:text-text-muted/50 focus:outline-none"
             />
+            <button
+              onClick={() => setShowCcBcc(!showCcBcc)}
+              className="text-xs text-text-muted hover:text-accent-cyan transition-colors flex items-center gap-1"
+            >
+              Cc/Cci
+              {showCcBcc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
           </div>
         </div>
+
+        {/* CC / BCC */}
+        {showCcBcc && (
+          <>
+            <div className="px-6 py-3 border-b border-border/30">
+              <div className="flex items-center gap-3">
+                <label className="text-sm text-text-muted w-16">Cc</label>
+                <input
+                  type="text"
+                  value={ccInput}
+                  onChange={(e) => setCcInput(e.target.value)}
+                  placeholder="copie@example.com, ..."
+                  className="flex-1 px-3 py-2 bg-transparent text-sm text-text placeholder:text-text-muted/50 focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-3 border-b border-border/30">
+              <div className="flex items-center gap-3">
+                <label className="text-sm text-text-muted w-16">Cci</label>
+                <input
+                  type="text"
+                  value={bccInput}
+                  onChange={(e) => setBccInput(e.target.value)}
+                  placeholder="copie cachée@example.com, ..."
+                  className="flex-1 px-3 py-2 bg-transparent text-sm text-text placeholder:text-text-muted/50 focus:outline-none"
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Subject */}
         <div className="px-6 py-3 border-b border-border/30">

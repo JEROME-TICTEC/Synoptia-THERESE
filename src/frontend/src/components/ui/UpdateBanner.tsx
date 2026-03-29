@@ -78,8 +78,21 @@ export function UpdateBanner() {
       // pour éviter le verrou backend.exe sur Windows
       try {
         await fetch('http://localhost:17293/api/shutdown', { method: 'POST' });
-        // Attendre que le process se termine
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Health check poll : attendre que le backend soit vraiment mort
+        const MAX_WAIT = 10_000;
+        const POLL_INTERVAL = 500;
+        let waited = 0;
+        while (waited < MAX_WAIT) {
+          try {
+            await fetch('http://localhost:17293/health');
+            // Backend répond encore, on attend
+            await new Promise(r => setTimeout(r, POLL_INTERVAL));
+            waited += POLL_INTERVAL;
+          } catch {
+            // Connexion refusée = backend mort, on peut continuer
+            break;
+          }
+        }
       } catch {
         // Backend peut déjà être arrêté ou indisponible - on continue
       }

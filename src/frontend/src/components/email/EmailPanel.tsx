@@ -228,7 +228,7 @@ export function EmailPanel({ standalone = false }: EmailPanelProps) {
     { id: 'INBOX', name: 'Boite de réception', icon: Inbox },
     { id: 'SENT', name: 'Envoyés', icon: Send },
     { id: 'DRAFT', name: 'Brouillons', icon: FileText },
-    { id: 'STARRED', name: 'Suivis', icon: Star },
+    { id: 'STARRED', name: 'Favoris', icon: Star },
     { id: 'TRASH', name: 'Corbeille', icon: Trash2 },
   ];
 
