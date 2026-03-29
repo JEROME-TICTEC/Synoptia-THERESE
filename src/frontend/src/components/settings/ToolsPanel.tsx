@@ -30,6 +30,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
 import { EnvVarModal } from './EnvVarModal';
 import * as api from '../../services/api';
+import { Z_LAYER } from '../../styles/z-layers';
 
 // ============================================================
 // PresetCategory - Groupe de presets avec header repliable
@@ -846,7 +847,7 @@ export function ToolsPanel({ onError }: ToolsPanelProps) {
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {serverToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center p-4`}>
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}

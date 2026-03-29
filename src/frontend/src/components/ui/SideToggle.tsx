@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface SideToggleProps {
   side: 'left' | 'right';
@@ -32,7 +33,7 @@ export function SideToggle({ side, isOpen, onClick, label, shortcut }: SideToggl
   return (
     <motion.button
       className={`
-        fixed z-30 overflow-hidden
+        fixed ${Z_LAYER.SIDEBAR} overflow-hidden
         cursor-pointer
         ${isLeft ? 'left-0 rounded-r-lg' : 'right-0 rounded-l-lg'}
       `}

@@ -15,6 +15,7 @@ import { ModeSelector, type BoardMode } from './ModeSelector';
 import { AdvisorArcLayout } from './AdvisorArcLayout';
 import { modalVariants, overlayVariants } from '../../lib/animations';
 import { cn } from '../../lib/utils';
+import { Z_LAYER } from '../../styles/z-layers';
 import {
   streamDeliberation,
   listBoardDecisions,
@@ -303,7 +304,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${Z_LAYER.MODAL}`}
             onClick={onClose}
           />
 
@@ -320,7 +321,7 @@ export function BoardPanel({ isOpen, onClose }: BoardPanelProps) {
             className={cn(
               'fixed inset-4 md:inset-8 lg:inset-12',
               'bg-surface rounded-2xl border border-border',
-              'z-50 overflow-hidden flex flex-col',
+              Z_LAYER.MODAL, 'overflow-hidden flex flex-col',
               'shadow-2xl'
             )}
             onClick={(e) => e.stopPropagation()}

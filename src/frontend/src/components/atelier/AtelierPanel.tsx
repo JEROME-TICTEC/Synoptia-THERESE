@@ -23,6 +23,7 @@ import { CodeReviewPanel } from "./CodeReviewPanel";
 import { SessionList } from "./SessionList";
 import { AgentChat } from "./AgentChat";
 import { NewTaskDialog } from "./NewTaskDialog";
+import { Z_LAYER } from "../../styles/z-layers";
 
 export function AtelierPanel() {
   const {
@@ -92,7 +93,7 @@ export function AtelierPanel() {
   if (!sourcePath) {
     return (
       <div
-        className="fixed right-0 top-0 z-50 flex h-full flex-col border-l border-white/5 bg-[#0B1226] shadow-2xl"
+        className={`fixed right-0 top-0 ${Z_LAYER.MODAL} flex h-full flex-col border-l border-white/5 bg-[#0B1226] shadow-2xl`}
         style={{ width: "480px" }}
       >
         <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
@@ -122,7 +123,7 @@ export function AtelierPanel() {
 
   return (
     <div
-      className="fixed right-0 top-0 z-50 flex h-full flex-col border-l border-white/5 bg-[#0B1226] shadow-2xl"
+      className={`fixed right-0 top-0 ${Z_LAYER.MODAL} flex h-full flex-col border-l border-white/5 bg-[#0B1226] shadow-2xl`}
       style={{ width: activeView === "openclaw" ? "720px" : "480px" }}
     >
       {/* Header */}

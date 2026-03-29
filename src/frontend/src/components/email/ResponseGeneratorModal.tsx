@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, RefreshCw, Check, Loader2 } from 'lucide-react';
 import * as api from '../../services/api';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface ResponseGeneratorModalProps {
   isOpen: boolean;
@@ -106,7 +107,7 @@ export function ResponseGeneratorModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${Z_LAYER.MODAL_NESTED}`}
             onClick={onClose}
           />
 
@@ -118,7 +119,7 @@ export function ResponseGeneratorModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-full max-w-3xl"
+            className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${Z_LAYER.MODAL_NESTED} w-full max-w-3xl`}
           >
             <div className="bg-surface border border-text-muted/20 rounded-xl shadow-2xl p-6">
               {/* Header */}

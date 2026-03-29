@@ -16,6 +16,7 @@ import { listContacts, listProjects, listActivities, updateContactStage, type Co
 import { createCRMContact, importVCFContacts, type CreateCRMContactRequest } from '../../services/api/crm';
 import { useDemoMask } from '../../hooks';
 import { useStatusStore } from '../../stores/statusStore';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface CRMPanelProps {
   isOpen?: boolean;
@@ -314,7 +315,7 @@ export function CRMPanel({ isOpen, onClose, standalone = false }: CRMPanelProps)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            className={`fixed inset-0 bg-black/50 backdrop-blur-sm ${Z_LAYER.BACKDROP}`}
           />
 
           <motion.div
@@ -325,7 +326,7 @@ export function CRMPanel({ isOpen, onClose, standalone = false }: CRMPanelProps)
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-8 bg-background border border-surface rounded-xl shadow-2xl z-50 flex flex-col"
+            className={`fixed inset-8 bg-background border border-surface rounded-xl shadow-2xl ${Z_LAYER.MODAL} flex flex-col`}
           >
             {crmHeader}
             {crmTabs}
@@ -387,7 +388,7 @@ function CreateContactModal({ onClose, onCreate }: CreateContactModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[60]">
+    <div className={`fixed inset-0 flex items-center justify-center ${Z_LAYER.MODAL_NESTED}`}>
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <motion.div
         role="dialog"
@@ -729,7 +730,7 @@ function AddActivityModal({ contactId, onClose, onCreated }: AddActivityModalPro
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[60]">
+    <div className={`fixed inset-0 flex items-center justify-center ${Z_LAYER.MODAL_NESTED}`}>
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <motion.div
         role="dialog"

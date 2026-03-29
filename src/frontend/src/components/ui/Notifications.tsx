@@ -5,6 +5,7 @@ import { useStatusStore } from '../../stores/statusStore';
 import { useAccessibilityStore } from '../../stores/accessibilityStore';
 import { announceToScreenReader } from '../../lib/accessibility';
 import { cn } from '../../lib/utils';
+import { Z_LAYER } from '../../styles/z-layers';
 
 export function Notifications() {
   const { notifications, dismissNotification } = useStatusStore();
@@ -48,7 +49,7 @@ export function Notifications() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+      className={`fixed bottom-4 right-4 ${Z_LAYER.TOAST} flex flex-col gap-2 max-w-sm`}
       role="status"
       aria-live="polite"
       aria-label="Notifications"

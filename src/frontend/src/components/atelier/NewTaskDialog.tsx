@@ -8,6 +8,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Zap, Loader2 } from "lucide-react";
 import { useOpenClawStore } from "../../stores/openclawStore";
+import { Z_LAYER } from "../../styles/z-layers";
 
 export function NewTaskDialog() {
   const { isNewTaskOpen, closeNewTask, dispatchTask, isDispatching, openclawConnected, runningCount, maxAgents } =
@@ -42,7 +43,7 @@ export function NewTaskDialog() {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className={`fixed inset-0 ${Z_LAYER.MODAL_NESTED} flex items-center justify-center bg-black/50 backdrop-blur-sm`}>
       <div
         className="mx-4 w-full max-w-lg rounded-xl border border-white/10 bg-[#0F172A] shadow-2xl"
         onClick={(e) => e.stopPropagation()}

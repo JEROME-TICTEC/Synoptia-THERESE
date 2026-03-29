@@ -22,6 +22,7 @@ import { useStatusStore } from '../../stores/statusStore';
 import { listInvoices, deleteInvoice, generateInvoicePDF, sendInvoiceByEmail, type Invoice } from '../../services/api';
 import { InvoiceForm } from './InvoiceForm';
 import { cn } from '../../lib/utils';
+import { Z_LAYER } from '../../styles/z-layers';
 
 const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
   draft: { label: 'Brouillon', icon: FileText, color: 'text-text-muted' },
@@ -367,7 +368,7 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
 
   const deleteConfirmModal = deletingInvoice ? (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center"
+      className={`fixed inset-0 ${Z_LAYER.MODAL_NESTED} flex items-center justify-center`}
       onClick={() => !isDeleting && setDeletingInvoice(null)}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -444,7 +445,7 @@ export function InvoicesPanel({ standalone = false }: InvoicesPanelProps) {
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center"
+        className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center`}
         onClick={() => setIsInvoicePanelOpen(false)}
       >
         {/* Backdrop */}

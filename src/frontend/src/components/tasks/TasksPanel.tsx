@@ -15,6 +15,7 @@ import { TaskForm } from './TaskForm';
 import { Button } from '../ui/Button';
 import { useDemoMask } from '../../hooks';
 import * as api from '../../services/api';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface TasksPanelProps {
   isOpen?: boolean;
@@ -245,7 +246,7 @@ export function TasksPanel({ isOpen, onClose, standalone = false }: TasksPanelPr
   // Mode modal
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center`}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

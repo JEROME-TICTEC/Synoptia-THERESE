@@ -15,6 +15,7 @@ import { useChatStore, Conversation } from '../../stores/chatStore';
 import { staggerContainer, staggerItem, sidebarLeftVariants, overlayVariants } from '../../lib/animations';
 import * as api from '../../services/api';
 import { useDemoMask } from '../../hooks';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface ConversationSidebarProps {
   isOpen: boolean;
@@ -134,7 +135,7 @@ export function ConversationSidebar({ isOpen, onClose }: ConversationSidebarProp
             animate="animate"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${Z_LAYER.BACKDROP}`}
             onClick={onClose}
           />
 
@@ -145,7 +146,7 @@ export function ConversationSidebar({ isOpen, onClose }: ConversationSidebarProp
             animate="animate"
             exit="exit"
             data-testid="sidebar"
-            className="fixed left-0 top-0 bottom-0 w-[320px] bg-surface border-r border-border z-50 flex flex-col shadow-2xl"
+            className={`fixed left-0 top-0 bottom-0 w-[320px] bg-surface border-r border-border ${Z_LAYER.MODAL} flex flex-col shadow-2xl`}
           >
             {/* Header */}
             <div className="h-14 flex items-center justify-between px-4 border-b border-border/50">

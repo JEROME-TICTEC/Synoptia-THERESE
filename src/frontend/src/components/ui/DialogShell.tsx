@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface DialogShellProps {
   open: boolean;
@@ -56,7 +57,7 @@ export function DialogShell({ open, onClose, ariaLabel, children, className }: D
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center`}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />

@@ -8,6 +8,7 @@ import { useFontSize, useAccessibilityStore } from './stores/accessibilityStore'
 import { prefersReducedMotion, onReducedMotionChange } from './lib/accessibility';
 import * as api from './services/api';
 import type { PanelType } from './services/windowManager';
+import { Z_LAYER } from './styles/z-layers';
 
 // Lazy-loaded : panneaux secondaires et ecrans non-critiques (UltraJury perf)
 const PanelWindow = lazy(() => import('./components/panels/PanelWindow').then(m => ({ default: m.PanelWindow })));
@@ -170,7 +171,7 @@ function App() {
         {/* Skip link accessibilite (visible uniquement au focus clavier) */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-3 focus:bg-accent-cyan focus:text-bg focus:rounded"
+          className={`sr-only focus:not-sr-only focus:absolute focus:${Z_LAYER.MODAL} focus:p-3 focus:bg-accent-cyan focus:text-bg focus:rounded`}
         >
           Aller au contenu principal
         </a>

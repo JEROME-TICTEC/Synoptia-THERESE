@@ -6,6 +6,7 @@ import { User, Upload, Check, AlertCircle, Eye, FileText, X, Save, Loader2 } fro
 import { Button } from '../ui/Button';
 import { useDemoStore } from '../../stores/demoStore';
 import * as api from '../../services/api';
+import { Z_LAYER } from '../../styles/z-layers';
 
 // Types des props du formulaire profil
 export interface ProfileFormData {
@@ -112,7 +113,7 @@ export function ProfileTab({
 
       {/* Modal THERESE.md */}
       {mdModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center bg-black/60`}>
           <div className="w-full max-w-2xl mx-4 bg-surface border border-border rounded-xl shadow-2xl flex flex-col max-h-[80vh]">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">

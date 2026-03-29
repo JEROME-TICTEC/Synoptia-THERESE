@@ -16,6 +16,7 @@ import { CredentialsStep } from './CredentialsStep';
 import { VerifyStep } from './VerifyStep';
 import { SmtpConfigStep } from './SmtpConfigStep';
 import * as api from '../../../services/api';
+import { Z_LAYER } from '../../../styles/z-layers';
 
 interface EmailSetupWizardProps {
   onComplete: () => void;
@@ -86,7 +87,7 @@ export function EmailSetupWizard({ onComplete, onCancel }: EmailSetupWizardProps
   // (transform CSS sur les parents animés) ne crée un containing block CSS
   // qui perturbe le positionnement fixed du wizard et bloque les clics (BUG mail streaming)
   return createPortal(
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className={`fixed inset-0 ${Z_LAYER.WIZARD} flex items-center justify-center bg-black/60 backdrop-blur-sm`}>
       <motion.div
         role="dialog"
         aria-modal="true"

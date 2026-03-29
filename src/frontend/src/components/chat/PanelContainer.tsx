@@ -33,6 +33,8 @@ const AtelierPanel = lazy(() =>
   import('../atelier/AtelierPanel').then((m) => ({ default: m.AtelierPanel }))
 );
 
+import { Z_LAYER } from '../../styles/z-layers';
+
 interface PanelContainerProps {
   onUserCommandsRefresh: (commands: SlashCommand[]) => void;
 }
@@ -138,7 +140,7 @@ export function PanelContainer({ onUserCommandsRefresh }: PanelContainerProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            className={`fixed inset-0 ${Z_LAYER.MODAL} flex items-center justify-center bg-black/60 backdrop-blur-sm`}
             onClick={closeSaveCommand}
           >
             <motion.div

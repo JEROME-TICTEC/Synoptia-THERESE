@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCommandsStore } from '../../stores/commandsStore';
+import { Z_LAYER } from '../../styles/z-layers';
 
 /** Map icon name (string from backend) to Lucide component */
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -224,7 +225,7 @@ export function SlashCommandsMenu({
     <div
       style={menuStyle}
       className={cn(
-        'z-50 w-full max-w-md',
+        Z_LAYER.MODAL, 'w-full max-w-md',
         'bg-surface border border-border rounded-lg shadow-xl',
         'overflow-hidden'
       )}

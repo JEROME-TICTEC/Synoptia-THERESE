@@ -14,6 +14,7 @@ import { LLMStep } from './LLMStep';
 import { SecurityStep } from './SecurityStep';
 import { WorkingDirStep } from './WorkingDirStep';
 import { CompleteStep } from './CompleteStep';
+import { Z_LAYER } from '../../styles/z-layers';
 
 interface OnboardingWizardProps {
   isOpen: boolean;
@@ -93,7 +94,7 @@ export function OnboardingWizard({ isOpen, onComplete }: OnboardingWizardProps) 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center"
+          className={`fixed inset-0 ${Z_LAYER.ONBOARDING} flex items-center justify-center`}
         >
           {/* Backdrop with blur */}
           <motion.div
@@ -106,7 +107,7 @@ export function OnboardingWizard({ isOpen, onComplete }: OnboardingWizardProps) 
           {/* Window Title Bar with controls */}
           <div
             data-tauri-drag-region
-            className="absolute top-0 left-0 right-0 h-10 z-[101] flex items-center px-4"
+            className={`absolute top-0 left-0 right-0 h-10 ${Z_LAYER.ONBOARDING_TOP} flex items-center px-4`}
           >
             {/* Window controls (macOS style uniquement) */}
             {isMac && (
