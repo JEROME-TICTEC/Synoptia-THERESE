@@ -23,7 +23,9 @@
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
+    "@tauri-apps/plugin-process": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2.0.0",
+    "@tauri-apps/plugin-updater": "^2.0.0",
     "@types/dompurify": "^3.0.5",
     "clsx": "^2.1.0",
     "dompurify": "^3.3.1",
@@ -33,12 +35,10 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.0",
     "react-syntax-highlighter": "^15.5.0",
+    "react-virtuoso": "^4.12.0",
     "tailwind-merge": "^2.2.0",
     "tauri-plugin-mic-recorder-api": "^2.0.0",
-    "zustand": "^5.0.0",
-    "@tauri-apps/plugin-updater": "^2.0.0",
-    "@tauri-apps/plugin-process": "^2.0.0",
-    "react-virtuoso": "^4.12.0"
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
