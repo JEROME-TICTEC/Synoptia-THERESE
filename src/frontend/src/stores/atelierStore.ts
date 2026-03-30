@@ -270,11 +270,15 @@ export const useAtelierStore = create<AtelierState>((set, get) => ({
       }
 
       case 'tool_use': {
-        state.addSystemMessage(
-          `Utilisation de ${chunk.tool_name || 'outil'}...`,
-          'tool_use',
-          chunk.tool_name || undefined,
-        );
+        // Outils internes swarm : pas de message visible
+        const internalTools = new Set(['clarify', 'create_spec', 'explain_change']);
+        if (!internalTools.has(chunk.tool_name || '')) {
+          state.addSystemMessage(
+            `Utilisation de ${chunk.tool_name || 'outil'}...`,
+            'tool_use',
+            chunk.tool_name || undefined,
+          );
+        }
         break;
       }
 

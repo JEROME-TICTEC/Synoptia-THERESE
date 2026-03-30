@@ -167,6 +167,7 @@ class SpawnAgentRequest(BaseModel):
     profile_id: str
     instruction: str
     source_path: str | None = None
+    model: str | None = None
 
 
 class AgentProfileResponse(BaseModel):
@@ -178,6 +179,7 @@ class AgentProfileResponse(BaseModel):
     description: str
     color: str
     tools: list[str]
+    default_model: str = "claude-sonnet-4-6"
 
 
 class SendMessageRequest(BaseModel):

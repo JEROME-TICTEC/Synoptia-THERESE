@@ -40,6 +40,7 @@ export function AtelierPanel() {
 
   const [agentConfig, setAgentConfig] = useState<AgentConfigResponse | null>(null);
   const [activeAgentProfile, setActiveAgentProfile] = useState<string | null>(null);
+  const [activeAgentModel, setActiveAgentModel] = useState<string | undefined>(undefined);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -231,11 +232,12 @@ export function AtelierPanel() {
           activeAgentProfile ? (
             <AgentSession
               profileId={activeAgentProfile}
-              onBack={() => setActiveAgentProfile(null)}
+              model={activeAgentModel}
+              onBack={() => { setActiveAgentProfile(null); setActiveAgentModel(undefined); }}
             />
           ) : (
             <AgentCatalog
-              onSelectAgent={(profileId) => setActiveAgentProfile(profileId)}
+              onSelectAgent={(profileId, model) => { setActiveAgentProfile(profileId); setActiveAgentModel(model); }}
             />
           )
         )}

@@ -62,9 +62,14 @@ def _get_source_path() -> str | None:
             row = cursor.fetchone()
             conn.close()
             if row and row[0]:
-                p = Path(row[0])
-                if p.exists() and (p / ".git").exists():
+                raw = row[0].strip().strip('"').strip("'")
+                p = Path(raw).expanduser().resolve()
+                if p.exists() and ((p / ".git").exists() or (p / ".git").is_file()):
                     return str(p)
+                logger.warning(
+                    "Agent source_path configure '%s' (resolu: '%s') mais .git non trouve",
+                    row[0], p,
+                )
     except Exception as e:
         logger.debug("Agent config non disponible: %s", e)
 
@@ -228,6 +233,19 @@ async def list_profiles() -> list[AgentProfileResponse]:
     from app.services.agents.profiles import get_profiles
 
     profiles = get_profiles()
+
+    # Lire le modele LLM configure par l'utilisateur (pour proposer comme defaut)
+    user_model = None
+    try:
+        from app.services.llm import get_llm_service
+        svc = get_llm_service()
+        if svc and svc.config:
+            user_model = svc.config.model
+    except Exception:
+        pass
+
+    default_model = user_model or "claude-sonnet-4-6"
+
     return [
         AgentProfileResponse(
             id=p["id"],
@@ -236,6 +254,7 @@ async def list_profiles() -> list[AgentProfileResponse]:
             description=p["description"],
             color=p["color"],
             tools=p["tools"],
+            default_model=default_model,
         )
         for p in profiles
     ]
@@ -283,9 +302,14 @@ async def spawn_agent(request: SpawnAgentRequest):
         source_path=source_path or ".",
     )
 
-    # Filtrer les outils selon le profil
+    # Filtrer les outils selon le profil (exclure les outils swarm internes)
     allowed_tools = set(profile["tools"])
-    all_tools = {t["function"]["name"]: t for t in THERESE_TOOLS + ZEZETTE_TOOLS}
+    swarm_only_tools = {"clarify", "create_spec", "explain_change"}
+    all_tools = {
+        t["function"]["name"]: t
+        for t in THERESE_TOOLS + ZEZETTE_TOOLS
+        if t["function"]["name"] not in swarm_only_tools
+    }
 
     # Ajouter web_search si demande par le profil
     if "web_search" in allowed_tools:
@@ -313,11 +337,23 @@ async def spawn_agent(request: SpawnAgentRequest):
 
     tools_schema = [all_tools[name] for name in allowed_tools if name in all_tools]
 
+    # Determiner le modele LLM (requete > config utilisateur > defaut profil)
+    agent_model = request.model
+    if not agent_model:
+        try:
+            from app.services.llm import get_llm_service
+            svc = get_llm_service()
+            if svc and svc.config:
+                agent_model = svc.config.model
+        except Exception:
+            pass
+
     # Creer le runtime
     runtime = AgentRuntime(
         config=config,
         tool_executor=tool_executor,
         tools_schema=tools_schema,
+        model_override=agent_model,
     )
 
     async def event_stream():

@@ -181,6 +181,7 @@ function ToolCallBlock({
 
 interface Props {
   profileId: string;
+  model?: string;
   onBack: () => void;
 }
 
@@ -189,14 +190,14 @@ function genMsgId(): string {
   return `amsg-${Date.now()}-${++_sessionMsgCounter}`;
 }
 
-export function AgentSession({ profileId, onBack }: Props) {
+export function AgentSession({ profileId, model, onBack }: Props) {
   const profile = PROFILE_MAP[profileId];
   const colors = COLOR_MAP[profile?.color || ""] || DEFAULT_COLOR;
 
   const [messages, setMessages] = useState<AgentSessionMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [activeModel, setActiveModel] = useState<string>(profile?.default_model || "");
+  const [activeModel, setActiveModel] = useState<string>(model || profile?.default_model || "");
   const [needsInitialPrompt, setNeedsInitialPrompt] = useState(true);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -247,6 +248,7 @@ export function AgentSession({ profileId, onBack }: Props) {
           profileId,
           instruction,
           abortRef.current.signal,
+          activeModel || undefined,
         )) {
           handleChunk(chunk, assistantId);
         }

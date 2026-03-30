@@ -7,10 +7,10 @@
  */
 
 import { useEffect, useState } from "react";
-import { Bot, Loader2, AlertCircle } from "lucide-react";
+import { Bot, Loader2, AlertCircle, Brain } from "lucide-react";
 import { motion } from "framer-motion";
-import { getAgentProfiles } from "../../services/api/agents";
-import type { AgentProfile } from "../../services/api/agents";
+import { getAgentProfiles, getAgentConfig } from "../../services/api/agents";
+import type { AgentProfile, AgentModelInfo } from "../../services/api/agents";
 
 /** Couleurs par ID agent (fallback si le backend ne les fournit pas) */
 const COLOR_MAP: Record<string, { border: string; bg: string; text: string }> = {
@@ -110,12 +110,18 @@ const FALLBACK_PROFILES: AgentProfile[] = [
   },
 ];
 
+const STORAGE_KEY = "therese-agent-model";
+
 interface Props {
-  onSelectAgent: (profileId: string) => void;
+  onSelectAgent: (profileId: string, model?: string) => void;
 }
 
 export function AgentCatalog({ onSelectAgent }: Props) {
   const [profiles, setProfiles] = useState<AgentProfile[]>([]);
+  const [availableModels, setAvailableModels] = useState<AgentModelInfo[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>(() =>
+    localStorage.getItem(STORAGE_KEY) || "",
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,14 +130,25 @@ export function AgentCatalog({ onSelectAgent }: Props) {
 
     async function loadProfiles() {
       try {
-        const response = await getAgentProfiles();
+        const [profilesResp, configResp] = await Promise.all([
+          getAgentProfiles(),
+          getAgentConfig().catch(() => null),
+        ]);
         if (!cancelled) {
-          setProfiles(response.profiles);
+          setProfiles(profilesResp.profiles);
+          if (configResp?.available_models) {
+            setAvailableModels(configResp.available_models);
+          }
+          // Si pas de modele selectionne, utiliser le defaut du profil
+          if (!selectedModel && profilesResp.profiles[0]?.default_model) {
+            const defaultModel = profilesResp.profiles[0].default_model;
+            setSelectedModel(defaultModel);
+            localStorage.setItem(STORAGE_KEY, defaultModel);
+          }
           setError(null);
         }
       } catch {
         if (!cancelled) {
-          // Fallback sur les profils locaux si le backend n'a pas l'endpoint
           setProfiles(FALLBACK_PROFILES);
           setError(null);
         }
@@ -177,6 +194,36 @@ export function AgentCatalog({ onSelectAgent }: Props) {
         </p>
       </div>
 
+      {/* Selecteur de modele LLM */}
+      {availableModels.length > 0 && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-white/5 bg-[#131B35] px-3 py-2">
+          <Brain size={14} className="shrink-0 text-cyan-400" />
+          <select
+            value={selectedModel}
+            onChange={(e) => {
+              setSelectedModel(e.target.value);
+              localStorage.setItem(STORAGE_KEY, e.target.value);
+            }}
+            className="flex-1 bg-transparent text-xs text-[#E6EDF7] outline-none [&>optgroup]:bg-[#131B35] [&>option]:bg-[#131B35]"
+          >
+            {Object.entries(
+              availableModels.reduce<Record<string, AgentModelInfo[]>>((acc, m) => {
+                (acc[m.provider] ??= []).push(m);
+                return acc;
+              }, {}),
+            ).map(([provider, models]) => (
+              <optgroup key={provider} label={provider}>
+                {models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Grille 2x3 */}
       <div className="grid grid-cols-2 gap-3">
         {profiles.map((profile, index) => {
@@ -188,7 +235,7 @@ export function AgentCatalog({ onSelectAgent }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, delay: index * 0.06 }}
-              onClick={() => onSelectAgent(profile.id)}
+              onClick={() => onSelectAgent(profile.id, selectedModel || undefined)}
               className={`group flex flex-col items-center gap-2 rounded-xl border ${colors.border} bg-[#131B35] p-4 text-center transition-all hover:border-cyan-400/50 hover:bg-[#1a2340]`}
             >
               {/* Icone */}

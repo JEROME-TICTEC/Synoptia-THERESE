@@ -380,13 +380,17 @@ export async function* streamAgentSpawn(
   profileId: string,
   instruction: string,
   signal?: AbortSignal,
+  model?: string,
 ): AsyncGenerator<SpawnAgentStreamChunk> {
   const url = `${API_BASE}/api/agents/spawn`;
+
+  const body: Record<string, string> = { profile_id: profileId, instruction };
+  if (model) body.model = model;
 
   const response = await apiFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ profile_id: profileId, instruction }),
+    body: JSON.stringify(body),
     signal,
   });
 
