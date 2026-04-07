@@ -8,6 +8,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+
+// ============================================================
+// US-PERS-06: UX Mode (Standard / Contributeur)
+// ============================================================
+
+export type UXMode = 'standard' | 'contributeur';
+const DEFAULT_UX_MODE: UXMode = 'standard';
 // ============================================================
 // US-PERS-01: Custom Keyboard Shortcuts
 // ============================================================
@@ -103,6 +110,10 @@ const DEFAULT_FEATURE_VISIBILITY: FeatureVisibility = {
 // ============================================================
 
 interface PersonalisationState {
+  // US-PERS-06: UX Mode
+  uxMode: UXMode;
+  setUXMode: (mode: UXMode) => void;
+
   // US-PERS-01: Keyboard shortcuts
   shortcuts: KeyboardShortcut[];
   setShortcut: (action: string, key: string, modifiers: ('cmd' | 'ctrl' | 'alt' | 'shift')[]) => void;
@@ -129,6 +140,13 @@ interface PersonalisationState {
 export const usePersonalisationStore = create<PersonalisationState>()(
   persist(
     (set, get) => ({
+      // ============================================================
+      // US-PERS-06: UX Mode
+      // ============================================================
+
+      uxMode: DEFAULT_UX_MODE,
+      setUXMode: (mode) => set({ uxMode: mode }),
+
       // ============================================================
       // US-PERS-01: Keyboard Shortcuts
       // ============================================================

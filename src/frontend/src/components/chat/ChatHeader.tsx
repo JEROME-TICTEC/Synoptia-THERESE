@@ -3,6 +3,7 @@ import { Button } from '../ui/Button';
 import { NotificationCenter } from '../ui/NotificationCenter';
 import { useChatStore } from '../../stores/chatStore';
 import { useDemoStore } from '../../stores/demoStore';
+import { useUXMode } from '../../hooks/useUXMode';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 interface ChatHeaderProps {
@@ -30,6 +31,7 @@ export function ChatHeader({
 }: ChatHeaderProps) {
   const { createConversation, currentConversation } = useChatStore();
   const demoEnabled = useDemoStore((s) => s.enabled);
+  const { isContributeur } = useUXMode();
   const conversation = currentConversation();
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
@@ -139,23 +141,25 @@ export function ChatHeader({
           <CheckSquare className="w-4 h-4" />
         </Button>
 
-        {/* Board - icône custom 5 conseillers colorés */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleBoardPanel}
-          className="w-8 h-8 hover:bg-accent-cyan/15"
-          title={isMac ? 'Board (⌘D)' : 'Board (Ctrl+D)'}
-        >
-          <svg width="24" height="24" viewBox="0 0 40 40" fill="none" className="shrink-0">
-            <circle cx="20" cy="20" r="5.5" fill="#E6EDF7" />
-            <circle cx="20" cy="8" r="3" stroke="#22D3EE" strokeWidth="1.5" />
-            <circle cx="31.4" cy="16.3" r="3" stroke="#A855F7" strokeWidth="1.5" />
-            <circle cx="27.1" cy="29.7" r="3" stroke="#EF4444" strokeWidth="1.5" />
-            <circle cx="12.9" cy="29.7" r="3" stroke="#F59E0B" strokeWidth="1.5" />
-            <circle cx="8.6" cy="16.3" r="3" stroke="#E11D8D" strokeWidth="1.5" />
-          </svg>
-        </Button>
+        {/* Board - mode Contributeur uniquement */}
+        {isContributeur && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleBoardPanel}
+            className="w-8 h-8 hover:bg-accent-cyan/15"
+            title={isMac ? 'Board (⌘D)' : 'Board (Ctrl+D)'}
+          >
+            <svg width="24" height="24" viewBox="0 0 40 40" fill="none" className="shrink-0">
+              <circle cx="20" cy="20" r="5.5" fill="#E6EDF7" />
+              <circle cx="20" cy="8" r="3" stroke="#22D3EE" strokeWidth="1.5" />
+              <circle cx="31.4" cy="16.3" r="3" stroke="#A855F7" strokeWidth="1.5" />
+              <circle cx="27.1" cy="29.7" r="3" stroke="#EF4444" strokeWidth="1.5" />
+              <circle cx="12.9" cy="29.7" r="3" stroke="#F59E0B" strokeWidth="1.5" />
+              <circle cx="8.6" cy="16.3" r="3" stroke="#E11D8D" strokeWidth="1.5" />
+            </svg>
+          </Button>
+        )}
 
         <Button
           variant="ghost"
@@ -190,15 +194,17 @@ export function ChatHeader({
 
       {/* Droite: Atelier + Paramètres + Window controls */}
       <div className="flex-1 flex items-center justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleAtelierPanel}
-          className="w-8 h-8 hover:bg-purple-500/15"
-          title={isMac ? 'Atelier (⌘⇧A)' : 'Atelier (Ctrl+Shift+A)'}
-        >
-          <Zap className="w-4 h-4 text-purple-400" />
-        </Button>
+        {isContributeur && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleAtelierPanel}
+            className="w-8 h-8 hover:bg-purple-500/15"
+            title={isMac ? 'Atelier (⌘⇧A)' : 'Atelier (Ctrl+Shift+A)'}
+          >
+            <Zap className="w-4 h-4 text-purple-400" />
+          </Button>
+        )}
         <NotificationCenter />
         <Button variant="ghost" size="icon" title="Paramètres" onClick={onOpenSettings} data-testid="settings-btn">
           <Settings className="w-5 h-5" />

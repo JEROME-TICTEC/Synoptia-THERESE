@@ -25,6 +25,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useUXMode } from '../../hooks/useUXMode';
 import { useChatStore } from '../../stores/chatStore';
 import { Z_LAYER } from '../../styles/z-layers';
 
@@ -84,6 +85,7 @@ export function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useAccessibilityStore((s) => s.reduceMotion);
+  const { isContributeur } = useUXMode();
 
   const { createConversation, clearCurrentConversation } = useChatStore();
 
@@ -269,14 +271,19 @@ export function CommandPalette({
   );
 
   const filteredCommands = useMemo(() => {
-    if (!query.trim()) return commands;
+    // Filtrer les commandes reservees au mode Contributeur
+    const available = isContributeur
+      ? commands
+      : commands.filter((cmd) => !cmd.contributeurOnly);
+
+    if (!query.trim()) return available;
     const q = query.toLowerCase();
-    return commands.filter(
+    return available.filter(
       (cmd) =>
         cmd.name.toLowerCase().includes(q) ||
         cmd.description.toLowerCase().includes(q)
     );
-  }, [commands, query]);
+  }, [commands, query, isContributeur]);
 
   // Reset selection when query changes
   useEffect(() => {

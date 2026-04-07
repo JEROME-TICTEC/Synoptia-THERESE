@@ -20,6 +20,7 @@ import { AgentsTab } from './AgentsTab';
 import { PrivacyTab } from './PrivacyTab';
 import { resolveModelForProvider } from './modelResolution';
 import { Z_LAYER } from '../../styles/z-layers';
+import { useUXMode } from '../../hooks/useUXMode';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -28,14 +29,14 @@ interface SettingsModalProps {
 
 type Tab = 'profile' | 'ai' | 'services' | 'tools' | 'agents' | 'privacy' | 'advanced' | 'about';
 
-const TABS: { id: Tab; label: string; icon: typeof User }[] = [
+const ALL_TABS: { id: Tab; label: string; icon: typeof User; contributeurOnly?: boolean }[] = [
   { id: 'profile', label: 'Profil', icon: User },
   { id: 'ai', label: 'IA', icon: Cpu },
   { id: 'services', label: 'Services', icon: Layers },
-  { id: 'tools', label: 'Outils', icon: Wrench },
-  { id: 'agents', label: 'Agents', icon: Zap },
+  { id: 'tools', label: 'Outils', icon: Wrench, contributeurOnly: true },
+  { id: 'agents', label: 'Agents', icon: Zap, contributeurOnly: true },
   { id: 'privacy', label: 'Confidentialité', icon: Shield },
-  { id: 'advanced', label: 'Avancé', icon: SlidersHorizontal },
+  { id: 'advanced', label: 'Avancé', icon: SlidersHorizontal, contributeurOnly: true },
   { id: 'about', label: 'À propos', icon: Info },
 ];
 
@@ -45,6 +46,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { uxMode, isContributeur, setUXMode } = useUXMode();
 
   // Configuration LLM
   const [selectedProvider, setSelectedProvider] = useState<api.LLMProvider>('anthropic');
@@ -599,7 +601,29 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="flex-1 flex overflow-hidden min-h-0">
               {/* Sidebar navigation */}
               <nav className="w-44 shrink-0 border-r border-border/30 py-2 overflow-y-auto bg-background/30">
-                {TABS.map((tab) => {
+                {/* Toggle Mode Contributeur */}
+                <div className="px-4 py-3 border-b border-border/30 mb-2">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={isContributeur}
+                        onChange={(e) => setUXMode(e.target.checked ? 'contributeur' : 'standard')}
+                        className="sr-only peer"
+                        data-testid="ux-mode-toggle"
+                      />
+                      <div className="w-9 h-5 bg-border/50 rounded-full peer-checked:bg-accent-cyan/60 transition-colors" />
+                      <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-text rounded-full transition-transform peer-checked:translate-x-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-medium text-text block leading-tight">Mode Contributeur</span>
+                      <span className="text-[10px] text-text-muted leading-tight">Fonctions avancées</span>
+                    </div>
+                  </label>
+                </div>
+                {ALL_TABS
+                  .filter((tab) => !tab.contributeurOnly || isContributeur)
+                  .map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
                   return (
