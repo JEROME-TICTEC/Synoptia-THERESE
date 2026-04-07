@@ -48,6 +48,9 @@ from app.routers.notifications import router as notifications_router
 from app.routers.performance import router as perf_router
 from app.routers.personalisation import router as personalisation_router
 
+# Bibliothèque de prompts prêts à l'emploi
+from app.routers.prompts import router as prompts_router
+
 # Phase 6 RGPD Compliance
 from app.routers.rgpd import router as rgpd_router
 from app.routers.skills import router as skills_router
@@ -87,4 +90,5 @@ __all__ = [
     "notifications_router",  # US-004 - Notifications push in-app
     "dashboard_router",  # US-005 - Dashboard Ma journée
     "follow_ups_router",  # Email Backlog - Follow-ups
+    "prompts_router",  # Bibliothèque de prompts
 ]

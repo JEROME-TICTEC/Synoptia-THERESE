@@ -506,3 +506,13 @@ export {
   type DashboardSummary,
   type TodayDashboard,
 } from './dashboard';
+
+// Prompts - Bibliothèque de prompts prêts à l'emploi
+export {
+  getPromptLibrary,
+  searchPromptLibrary,
+  type PromptItem,
+  type PromptCategory,
+  type PromptLibraryResponse,
+  type PromptSearchResponse,
+} from './prompts';

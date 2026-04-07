@@ -22,6 +22,7 @@ import {
   FileText,
   Search as SearchIcon,
   Sparkles,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useChatStore } from '../../stores/chatStore';
@@ -124,6 +125,14 @@ export function CommandPalette({
         description: 'Générer DOCX, PPTX ou XLSX avec les Skills Office',
         icon: <Sparkles className="w-4 h-4" />,
         action: () => { onClose(); onOpenGuided?.(); },
+        category: 'chat',
+      },
+            {
+        id: 'prompt-library',
+        name: 'Bibliothèque de prompts',
+        description: 'Modèles de prompts prêts à l\'emploi',
+        icon: <BookOpen className="w-4 h-4" />,
+        action: () => { onClose(); onOpenPromptLibrary?.(); },
         category: 'chat',
       },
       // -- Mémoire --

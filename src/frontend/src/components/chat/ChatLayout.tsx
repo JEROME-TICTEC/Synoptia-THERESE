@@ -162,7 +162,7 @@ export function ChatLayout() {
         )}
       </main>
 
-      <CommandPalette isOpen={ps.showCommandPalette} onClose={ps.closeCommandPalette} onShowShortcuts={ps.openShortcuts} onNewContact={ps.openNewContact} onNewProject={ps.openNewProject} onOpenSettings={ps.openSettings} onToggleConversations={ps.toggleConversationSidebar} onToggleMemory={ps.toggleMemoryPanel} onToggleBoard={ps.toggleBoardPanel} onToggleEmail={handleToggleEmail} onToggleCalendar={handleToggleCalendar} onToggleTasks={handleToggleTasks} onToggleInvoices={handleToggleInvoices} onToggleCRM={handleToggleCRM} onSearch={() => usePanelStore.getState().togglePanel('memory')} onOpenFile={() => console.log('Open file')} onOpenGuided={() => setGuidedPanelActive(false)} />
+      <CommandPalette isOpen={ps.showCommandPalette} onClose={ps.closeCommandPalette} onShowShortcuts={ps.openShortcuts} onNewContact={ps.openNewContact} onNewProject={ps.openNewProject} onOpenSettings={ps.openSettings} onToggleConversations={ps.toggleConversationSidebar} onToggleMemory={ps.toggleMemoryPanel} onToggleBoard={ps.toggleBoardPanel} onToggleEmail={handleToggleEmail} onToggleCalendar={handleToggleCalendar} onToggleTasks={handleToggleTasks} onToggleInvoices={handleToggleInvoices} onToggleCRM={handleToggleCRM} onSearch={() => usePanelStore.getState().togglePanel('memory')} onOpenFile={() => console.log('Open file')} onOpenGuided={() => setGuidedPanelActive(false)} onOpenPromptLibrary={() => window.dispatchEvent(new Event("therese:open-prompt-library"))} />
       <ShortcutsModal isOpen={ps.showShortcuts} onClose={ps.closeShortcuts} />
       <aside role="complementary" aria-label="Conversations">
         <ConversationSidebar isOpen={ps.showConversationSidebar} onClose={ps.closeConversationSidebar} />

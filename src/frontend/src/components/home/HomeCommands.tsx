@@ -8,13 +8,14 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Brain, GitBranch, ChevronLeft, Plus, Trash2, ArrowRightLeft, type LucideIcon } from 'lucide-react';
+import { Sparkles, Brain, GitBranch, ChevronLeft, Plus, Trash2, ArrowRightLeft, BookOpen, type LucideIcon } from 'lucide-react';
 import { useCommandsStore } from '../../stores/commandsStore';
 import { CommandExecutor } from './CommandExecutor';
 import { CommandCard } from './CommandCard';
 import { RFCWizard } from '../rfc/RFCWizard';
 import type { CommandDefinition } from '../../types/command';
 import { cn } from '../../lib/utils';
+import { PromptLibrary } from '../prompts/PromptLibrary';
 import { Z_LAYER } from '../../styles/z-layers';
 
 interface HomeCommandsProps {
@@ -59,6 +60,7 @@ export function HomeCommands({ onPromptSelect, onGuidedPanelChange }: HomeComman
   const [selectedCategory, setSelectedCategory] = useState<typeof CATEGORY_BLOCKS[number] | null>(null);
   const [activeCommand, setActiveCommand] = useState<CommandDefinition | null>(null);
   const [showRFC, setShowRFC] = useState(false);
+  const [showPromptLibrary, setShowPromptLibrary] = useState(false);
   /** ID de la commande en cours de confirmation de suppression */
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   /** ID de la commande dont on affiche le menu de déplacement */
@@ -68,6 +70,15 @@ export function HomeCommands({ onPromptSelect, onGuidedPanelChange }: HomeComman
     fetchCommands();
   }, [fetchCommands]);
 
+  // Écouter l'événement d'ouverture de la bibliothèque de prompts (depuis CommandPalette)
+  useEffect(() => {
+    const handler = () => setShowPromptLibrary(true);
+    window.addEventListener('therese:open-prompt-library', handler);
+    return () => window.removeEventListener('therese:open-prompt-library', handler);
+  }, []);
+
+  // Écouter l'événement d'ouverture de la bibliothèque de prompts (depuis CommandPalette)
+  useEffect(() => {
   const homeCommands = useMemo(() => {
     return commands.filter((c) => c.show_on_home);
   }, [commands]);
@@ -174,7 +185,16 @@ export function HomeCommands({ onPromptSelect, onGuidedPanelChange }: HomeComman
 
       {/* Contenu principal */}
       <AnimatePresence mode="wait">
-        {showRFC ? (
+        {showPromptLibrary ? (
+          <PromptLibrary
+            key="prompt-library"
+            onSelectPrompt={(text) => {
+              onPromptSelect(text);
+              setShowPromptLibrary(false);
+            }}
+            onClose={() => setShowPromptLibrary(false)}
+          />
+        ) : showRFC ? (
           <RFCWizard
             key="rfc-wizard"
             onClose={() => {
@@ -336,7 +356,7 @@ export function HomeCommands({ onPromptSelect, onGuidedPanelChange }: HomeComman
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
-            className="grid grid-cols-3 gap-3 max-w-2xl w-full"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl w-full"
           >
             {isLoading ? (
               <div className="col-span-3 flex items-center justify-center py-8">
@@ -380,6 +400,37 @@ export function HomeCommands({ onPromptSelect, onGuidedPanelChange }: HomeComman
                   </p>
                 </motion.button>
               ))
+            )}
+            {/* 4e bloc : Bibliothèque de prompts */}
+            {!isLoading && (
+              <motion.button
+                key="prompt-library-btn"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowPromptLibrary(true)}
+                className={cn(
+                  'group relative flex flex-col items-start p-4 rounded-xl',
+                  'bg-surface-elevated/60 backdrop-blur-sm',
+                  'border border-border hover:border-accent-cyan/50',
+                  'hover:shadow-[0_0_20px_rgba(34,211,238,0.15)]',
+                  'transition-all duration-200 text-left',
+                  'focus:outline-none focus:ring-2 focus:ring-accent-cyan/30',
+                )}
+              >
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-accent-cyan/5 to-accent-magenta/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative flex items-center justify-center w-10 h-10 rounded-lg mb-3 bg-gradient-to-br from-accent-cyan/20 to-accent-magenta/20 group-hover:from-accent-cyan/30 group-hover:to-accent-magenta/30 transition-all duration-200">
+                  <BookOpen className="w-5 h-5 text-accent-cyan group-hover:text-white transition-colors duration-200" />
+                </div>
+                <h3 className="relative text-sm font-semibold text-text group-hover:text-white transition-colors duration-200">
+                  Prompts
+                </h3>
+                <p className="relative text-xs mt-1 text-text-muted line-clamp-2">
+                  Modèles prêts à l'emploi
+                </p>
+              </motion.button>
             )}
           </motion.div>
         )}
