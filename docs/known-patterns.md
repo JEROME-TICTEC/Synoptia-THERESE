@@ -95,3 +95,14 @@
 - 6 occurrences de `alert()` dans `InvoiceForm.tsx`
 - Anti-pattern dans WebView Tauri (bloque le thread, style natif non dark mode)
 - **Ne pas bloquer** : acceptable en alpha, à remplacer par validation inline
+
+### PATH enrichi dupliqué dans mcp.py (v0.10.8 - DETTE)
+- 3 copies de la logique de résolution PATH enrichi (nvm, fnm, volta, homebrew) dans `mcp.py`
+- À extraire dans une fonction utilitaire commune
+- **Ne pas bloquer** : fonctionnel, pas de risque
+
+### String matching erreurs email (v0.10.8 - DETTE)
+- `workspace_tools.py` : détection auth/connexion via str(e).lower() contenant "authentication", "login", "connection"
+- Fragile si provider renvoie des messages en français ou si les messages changent entre versions
+- Préférer le catch de `smtplib.SMTPAuthenticationError` ou les codes SMTP (535, 530)
+- **Ne pas bloquer** : le fallback est un message générique, pas de crash
