@@ -22,7 +22,6 @@ import { useAccessibilityStore } from "../../stores/accessibilityStore";
 import { announceToScreenReader } from "../../lib/accessibility";
 import { cn } from "../../lib/utils";
 import type { AppNotification } from "../../services/api/notifications";
-import { Z_LAYER } from "../../styles/z-layers";
 
 // Icone par type de notification
 function NotificationIcon({ type }: { type: AppNotification["type"] }) {
