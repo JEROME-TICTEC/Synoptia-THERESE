@@ -1,0 +1,279 @@
+[
+  {
+    "id": "email-relance-client",
+    "title": "Relance client en attente",
+    "category": "email",
+    "description": "Relance polie un client qui n'a pas répondu depuis plusieurs jours.",
+    "prompt": "Rédige un email de relance pour {nom_client}, qui n'a pas répondu depuis {nombre_jours} jours au sujet de {sujet}. Le ton doit rester cordial et professionnel, sans pression excessive. Rappelle brièvement le contexte et propose une date pour échanger.\n\nSignature : {prenom} - {nom_entreprise}",
+    "tags": ["relance", "client", "suivi", "email"]
+  },
+  {
+    "id": "email-reponse-pro",
+    "title": "Réponse professionnelle",
+    "category": "email",
+    "description": "Réponds à un email reçu de façon structurée et courtoise.",
+    "prompt": "Rédige une réponse professionnelle à l'email suivant :\n\n\"{contenu_email_recu}\"\n\nMa position sur le sujet : {ma_position}. Le ton doit être {ton} (cordial / formel / amical). Termine par une proposition d'action concrète.",
+    "tags": ["réponse", "email", "professionnel"]
+  },
+  {
+    "id": "email-prospection",
+    "title": "Email de prospection",
+    "category": "email",
+    "description": "Premier contact avec un prospect pour présenter ton offre.",
+    "prompt": "Rédige un email de prospection pour {nom_prospect}, {poste_prospect} chez {entreprise_prospect}. Mon offre : {description_offre}. Le bénéfice principal pour lui : {benefice_principal}. L'email doit être court (5-6 phrases max), personnalisé, et terminer par une question ouverte pour engager la conversation. Pas de ton vendeur agressif.\n\nSignature : {prenom} - {nom_entreprise}",
+    "tags": ["prospection", "premier contact", "commercial", "email"]
+  },
+  {
+    "id": "email-remerciement",
+    "title": "Remerciement après rendez-vous",
+    "category": "email",
+    "description": "Remercie un contact après un rendez-vous ou un échange.",
+    "prompt": "Rédige un email de remerciement pour {nom_contact} suite à {type_echange} (rendez-vous / appel / visioconférence) du {date}. Points clés abordés : {points_cles}. Prochaine étape convenue : {prochaine_etape}. Ton chaleureux mais professionnel.\n\nSignature : {prenom} - {nom_entreprise}",
+    "tags": ["remerciement", "rendez-vous", "suivi", "email"]
+  },
+  {
+    "id": "email-annulation-rdv",
+    "title": "Annulation ou report de rendez-vous",
+    "category": "email",
+    "description": "Annule ou reporte un rendez-vous en proposant une alternative.",
+    "prompt": "Rédige un email pour {annuler_ou_reporter} le rendez-vous prévu le {date_initiale} avec {nom_contact}. Raison (facultatif) : {raison}. Propose {nombre_creneaux} créneaux alternatifs : {creneaux_proposes}. Ton apologétique sans en faire trop.\n\nSignature : {prenom} - {nom_entreprise}",
+    "tags": ["annulation", "report", "rendez-vous", "email"]
+  },
+  {
+    "id": "email-intro-partenaire",
+    "title": "Introduction à un partenaire",
+    "category": "email",
+    "description": "Mets en relation deux contacts qui pourraient collaborer.",
+    "prompt": "Rédige un email d'introduction pour mettre en relation {nom_contact_1} ({activite_1}) et {nom_contact_2} ({activite_2}). Le point commun ou l'intérêt mutuel : {raison_mise_en_relation}. L'email doit être bref, expliquer pourquoi tu fais cette mise en relation, et laisser les deux parties prendre contact.\n\nSignature : {prenom} - {nom_entreprise}",
+    "tags": ["introduction", "mise en relation", "partenaire", "réseau", "email"]
+  },
+
+  {
+    "id": "commercial-pitch-produit",
+    "title": "Pitch produit en 30 secondes",
+    "category": "commercial",
+    "description": "Formule un pitch percutant pour présenter ton produit ou service.",
+    "prompt": "Crée un pitch de 30 secondes pour {nom_produit_service}. Public cible : {cible}. Problème résolu : {probleme}. Solution apportée : {solution}. Résultat concret pour le client : {resultat}. Le pitch doit suivre la structure problème-solution-preuve et tenir en 3-4 phrases percutantes.",
+    "tags": ["pitch", "produit", "présentation", "commercial"]
+  },
+  {
+    "id": "commercial-proposition",
+    "title": "Proposition commerciale",
+    "category": "commercial",
+    "description": "Rédige le corps d'une proposition commerciale structurée.",
+    "prompt": "Rédige une proposition commerciale pour {nom_client}, {entreprise_client}. Contexte du besoin : {contexte_besoin}. Solution proposée : {solution}. Livrables : {livrables}. Tarif : {tarif_ht} EUR HT. Délai : {delai}. Inclus une section contexte, une section solution détaillée, les conditions de réalisation et les prochaines étapes.",
+    "tags": ["proposition", "devis", "commercial", "offre"]
+  },
+  {
+    "id": "commercial-argumentaire",
+    "title": "Argumentaire de vente",
+    "category": "commercial",
+    "description": "Prépare les arguments clés pour convaincre un prospect.",
+    "prompt": "Prépare un argumentaire de vente pour {nom_produit_service} destiné à {profil_prospect}. Ses objections probables : {objections}. Ses motivations d'achat : {motivations}. Liste 5 arguments structurés avec pour chacun : l'argument, la preuve ou l'exemple concret, et la phrase de transition.",
+    "tags": ["argumentaire", "vente", "objections", "commercial"]
+  },
+  {
+    "id": "commercial-objection-prix",
+    "title": "Réponse à l'objection prix",
+    "category": "commercial",
+    "description": "Prépare une réponse convaincante quand un prospect trouve ton offre trop chère.",
+    "prompt": "Mon prospect {nom_prospect} trouve mon offre {nom_offre} à {prix} EUR trop chère. Son alternative moins chère : {alternative}. La valeur ajoutée de mon offre par rapport à l'alternative : {valeur_ajoutee}. Rédige 3 réponses différentes à cette objection prix : une factuelle (ROI), une émotionnelle (risque de ne pas agir), une comparative (coût réel vs perçu).",
+    "tags": ["objection", "prix", "négociation", "commercial"]
+  },
+  {
+    "id": "commercial-suivi-prospect",
+    "title": "Suivi de prospect",
+    "category": "commercial",
+    "description": "Relance un prospect après un premier échange commercial.",
+    "prompt": "Rédige un message de suivi pour {nom_prospect} rencontré le {date_rencontre} lors de {contexte} (salon / rendez-vous / webinaire). Ce qui l'intéressait : {interet}. Prochaine étape discutée : {prochaine_etape}. Le message doit rappeler le contexte, apporter une valeur ajoutée (article, conseil, cas client similaire) et proposer un créneau pour avancer.",
+    "tags": ["suivi", "prospect", "relance", "commercial"]
+  },
+  {
+    "id": "commercial-temoignage-client",
+    "title": "Demande de témoignage client",
+    "category": "commercial",
+    "description": "Demande un avis ou un témoignage à un client satisfait.",
+    "prompt": "Rédige un message pour demander un témoignage à {nom_client}, client depuis {duree}. La prestation réalisée : {prestation}. Le résultat obtenu : {resultat}. Le ton doit être reconnaissant, expliquer pourquoi son avis compte (aider d'autres entrepreneurs dans sa situation), et proposer le format qui l'arrange (écrit / vidéo / appel de 5 min).",
+    "tags": ["témoignage", "avis", "client", "preuve sociale", "commercial"]
+  },
+
+  {
+    "id": "admin-relance-impaye",
+    "title": "Relance facture impayée",
+    "category": "admin",
+    "description": "Relance formelle pour une facture en retard de paiement.",
+    "prompt": "Rédige une relance pour la facture n°{numero_facture} de {montant} EUR datée du {date_facture}, adressée à {nom_client}, {entreprise_client}. Retard de paiement : {nombre_jours_retard} jours. C'est la {niveau_relance} relance (1re / 2e / 3e). Adapte le ton en conséquence : courtois pour la 1re, ferme pour la 2e, avec mention des pénalités de retard pour la 3e.\n\nSignature : {prenom} - {nom_entreprise}",
+    "tags": ["facture", "impayé", "relance", "paiement", "admin"]
+  },
+  {
+    "id": "admin-demande-devis",
+    "title": "Demande de devis fournisseur",
+    "category": "admin",
+    "description": "Demande un devis détaillé à un fournisseur ou prestataire.",
+    "prompt": "Rédige une demande de devis pour {nom_fournisseur}. Besoin : {description_besoin}. Quantité ou volume : {quantite}. Délai souhaité : {delai}. Budget indicatif (si communiqué) : {budget}. Demande le détail des tarifs, les conditions de paiement, et les délais de livraison.\n\nSignature : {prenom} - {nom_entreprise}",
+    "tags": ["devis", "fournisseur", "achat", "admin"]
+  },
+  {
+    "id": "admin-note-frais",
+    "title": "Justificatif de note de frais",
+    "category": "admin",
+    "description": "Rédige un justificatif pour une note de frais professionnelle.",
+    "prompt": "Rédige un justificatif de note de frais pour : {nature_depense} (repas client / déplacement / fournitures / formation). Montant : {montant} EUR. Date : {date}. Lieu : {lieu}. Objet professionnel : {motif}. Si repas : nom des convives : {convives}. Le justificatif doit être concis et conforme aux obligations fiscales françaises.",
+    "tags": ["note de frais", "comptabilité", "justificatif", "admin"]
+  },
+  {
+    "id": "admin-courrier-administration",
+    "title": "Courrier à une administration",
+    "category": "admin",
+    "description": "Rédige un courrier formel à destination d'une administration française.",
+    "prompt": "Rédige un courrier formel à {nom_administration} (URSSAF / impôts / préfecture / greffe). Objet : {objet}. Ma situation : {contexte}. Ce que je demande : {demande}. Pièces jointes mentionnées : {pieces_jointes}. Le courrier doit suivre les conventions françaises (lieu + date, objet, formule de politesse).\n\nExpéditeur : {prenom} {nom}, {adresse}, SIRET {siret}",
+    "tags": ["courrier", "administration", "formel", "URSSAF", "impôts", "admin"]
+  },
+  {
+    "id": "admin-conditions-paiement",
+    "title": "Conditions de paiement client",
+    "category": "admin",
+    "description": "Formalise les conditions de paiement pour un nouveau client.",
+    "prompt": "Rédige les conditions de paiement à inclure dans un devis ou contrat pour {nom_client}. Type de prestation : {type_prestation}. Montant total : {montant} EUR HT. Modalités souhaitées : {modalites} (acompte 30% / paiement à 30 jours / paiement en 3 fois). Pénalités de retard : taux légal. Inclure les mentions obligatoires (loi française).",
+    "tags": ["paiement", "conditions", "devis", "contrat", "admin"]
+  },
+  {
+    "id": "admin-attestation-honneur",
+    "title": "Attestation sur l'honneur",
+    "category": "admin",
+    "description": "Rédige une attestation sur l'honneur conforme.",
+    "prompt": "Rédige une attestation sur l'honneur pour : {objet_attestation}. Je soussigné(e) {prenom} {nom}, né(e) le {date_naissance} à {lieu_naissance}, demeurant {adresse}. Ce que j'atteste : {declaration}. Cette attestation est destinée à {destinataire}. Inclure la mention \"Fait pour servir et valoir ce que de droit\", lieu, date et \"Lu et approuvé\".",
+    "tags": ["attestation", "honneur", "déclaration", "admin"]
+  },
+
+  {
+    "id": "redaction-post-linkedin",
+    "title": "Post LinkedIn engageant",
+    "category": "redaction",
+    "description": "Rédige un post LinkedIn qui génère de l'engagement.",
+    "prompt": "Rédige un post LinkedIn sur le thème : {theme}. Mon angle / mon vécu : {angle_personnel}. Public visé : {cible}. Objectif du post : {objectif} (notoriété / générer des leads / partager un apprentissage / lancer un débat). Le post doit faire entre 800 et 1200 caractères, commencer par un hook accrocheur, raconter une mini-histoire ou un constat personnel, et terminer par une question ouverte ou un appel à l'action.",
+    "tags": ["LinkedIn", "post", "réseaux sociaux", "rédaction"]
+  },
+  {
+    "id": "redaction-bio-pro",
+    "title": "Bio professionnelle",
+    "category": "redaction",
+    "description": "Rédige une bio professionnelle pour un site, un profil ou une conférence.",
+    "prompt": "Rédige une bio professionnelle pour {prenom} {nom}. Poste actuel : {poste}. Entreprise : {entreprise}. Parcours résumé : {parcours}. Expertise principale : {expertise}. Un fait marquant ou différenciant : {fait_marquant}. Format : {format} (courte 2-3 phrases / moyenne 1 paragraphe / longue 3 paragraphes). Ton : {ton} (sérieux / décontracté / inspirant).",
+    "tags": ["bio", "profil", "présentation", "rédaction"]
+  },
+  {
+    "id": "redaction-description-produit",
+    "title": "Description de produit ou service",
+    "category": "redaction",
+    "description": "Rédige une description convaincante pour un produit ou service.",
+    "prompt": "Rédige une description pour {nom_produit_service}. Public cible : {cible}. Problème résolu : {probleme}. Fonctionnalités clés : {fonctionnalites}. Prix : {prix}. Canal de diffusion : {canal} (site web / marketplace / flyer / réseaux sociaux). La description doit mettre en avant les bénéfices plutôt que les caractéristiques techniques, et inclure un appel à l'action.",
+    "tags": ["description", "produit", "service", "copywriting", "rédaction"]
+  },
+  {
+    "id": "redaction-communique",
+    "title": "Communiqué ou annonce",
+    "category": "redaction",
+    "description": "Rédige un communiqué pour annoncer une nouveauté, un événement ou un partenariat.",
+    "prompt": "Rédige un communiqué pour annoncer : {sujet_annonce}. Contexte : {contexte}. Pourquoi c'est important : {importance}. Citation du dirigeant : {citation}. Date effective : {date}. Cible du communiqué : {cible} (presse / clients / partenaires). Format : communiqué structuré avec titre, chapô, corps et contact presse.",
+    "tags": ["communiqué", "annonce", "presse", "communication", "rédaction"]
+  },
+  {
+    "id": "redaction-faq",
+    "title": "FAQ produit ou service",
+    "category": "redaction",
+    "description": "Génère une FAQ complète pour un produit, un service ou un événement.",
+    "prompt": "Génère une FAQ de {nombre_questions} questions pour {sujet}. Public : {cible}. Les questions doivent couvrir : fonctionnement, tarifs, délais, garanties, et cas particuliers. Pour chaque question, rédige une réponse claire en 2-3 phrases. Ton : {ton} (professionnel / accessible / technique).",
+    "tags": ["FAQ", "questions", "réponses", "support", "rédaction"]
+  },
+  {
+    "id": "redaction-newsletter",
+    "title": "Newsletter mensuelle",
+    "category": "redaction",
+    "description": "Rédige le contenu d'une newsletter pour tes abonnés.",
+    "prompt": "Rédige une newsletter pour {nom_entreprise}, mois de {mois}. Thème principal : {theme}. Actualités à mentionner : {actualites}. Offre ou promotion en cours : {offre}. Conseil ou astuce du mois : {conseil}. Événement à venir : {evenement}. La newsletter doit avoir un objet d'email accrocheur, une intro engageante, et chaque section doit être courte (3-4 phrases).",
+    "tags": ["newsletter", "email", "abonnés", "contenu", "rédaction"]
+  },
+
+  {
+    "id": "orga-compte-rendu",
+    "title": "Compte-rendu de réunion",
+    "category": "organisation",
+    "description": "Structure un compte-rendu clair après une réunion ou un appel.",
+    "prompt": "Rédige un compte-rendu de réunion. Date : {date}. Participants : {participants}. Objet : {objet}. Points abordés :\n{points_abordes}\n\nDécisions prises :\n{decisions}\n\nActions à mener (qui fait quoi, pour quand) :\n{actions}\n\nProchaine réunion : {prochaine_reunion}. Format structuré, clair, avec des puces pour chaque action.",
+    "tags": ["compte-rendu", "réunion", "organisation", "notes"]
+  },
+  {
+    "id": "orga-planning-semaine",
+    "title": "Planning de la semaine",
+    "category": "organisation",
+    "description": "Organise ta semaine avec des créneaux dédiés par priorité.",
+    "prompt": "Aide-moi à organiser ma semaine du {date_debut} au {date_fin}. Mes priorités cette semaine : {priorites}. Mes rendez-vous déjà calés : {rdv_fixes}. Mes contraintes : {contraintes} (enfants à récupérer, sport, etc.). Temps disponible par jour : {heures_dispo}h. Propose un planning jour par jour avec des créneaux de 1h à 2h, en plaçant les tâches exigeantes le matin.",
+    "tags": ["planning", "semaine", "organisation", "productivité"]
+  },
+  {
+    "id": "orga-brief-projet",
+    "title": "Brief de projet",
+    "category": "organisation",
+    "description": "Structure le brief d'un nouveau projet avant de le lancer.",
+    "prompt": "Rédige un brief de projet pour : {nom_projet}. Client ou commanditaire : {client}. Contexte : {contexte}. Objectifs : {objectifs}. Livrables attendus : {livrables}. Contraintes (budget, délai, technique) : {contraintes}. Critères de réussite : {criteres_reussite}. Le brief doit tenir sur une page et servir de référence tout au long du projet.",
+    "tags": ["brief", "projet", "cadrage", "organisation"]
+  },
+  {
+    "id": "orga-checklist-evenement",
+    "title": "Checklist événement",
+    "category": "organisation",
+    "description": "Crée une checklist complète pour organiser un événement.",
+    "prompt": "Crée une checklist pour organiser {type_evenement} (formation / atelier / soirée / salon). Date : {date}. Lieu : {lieu}. Nombre de participants attendus : {nombre_participants}. Budget : {budget}. La checklist doit couvrir : J-30 (logistique, invitations), J-7 (confirmations, matériel), J-1 (derniers préparatifs), Jour J (déroulé), J+1 (suivi, remerciements).",
+    "tags": ["checklist", "événement", "organisation", "logistique"]
+  },
+  {
+    "id": "orga-process-interne",
+    "title": "Documentation de processus",
+    "category": "organisation",
+    "description": "Documente un processus interne pour pouvoir le déléguer ou l'automatiser.",
+    "prompt": "Documente le processus suivant : {nom_processus}. Déclencheur : {declencheur} (quand est-ce qu'on lance ce processus). Étapes dans l'ordre :\n{etapes}\n\nOutils utilisés : {outils}. Durée moyenne : {duree}. Responsable : {responsable}. La documentation doit être assez précise pour qu'une personne qui ne connaît pas le processus puisse le suivre sans aide.",
+    "tags": ["processus", "documentation", "délégation", "organisation"]
+  },
+  {
+    "id": "orga-ordre-jour",
+    "title": "Ordre du jour de réunion",
+    "category": "organisation",
+    "description": "Prépare un ordre du jour structuré avant une réunion.",
+    "prompt": "Prépare l'ordre du jour pour la réunion du {date}. Objet : {objet}. Participants : {participants}. Durée prévue : {duree}. Sujets à aborder :\n{sujets}\n\nPour chaque sujet, indique : le temps alloué, le responsable de la présentation, et l'objectif (information / décision / brainstorming). Inclure un créneau \"questions diverses\" en fin de réunion.",
+    "tags": ["ordre du jour", "réunion", "préparation", "organisation"]
+  },
+
+  {
+    "id": "juridique-cgv",
+    "title": "Conditions Générales de Vente",
+    "category": "juridique",
+    "description": "Génère une base de CGV adaptée à ton activité de prestation de services.",
+    "prompt": "Rédige des Conditions Générales de Vente pour {nom_entreprise}, {forme_juridique} au capital de {capital} EUR, SIRET {siret}, dont le siège social est {adresse}. Activité : {activite}. Type de clients : {type_clients} (particuliers / professionnels / les deux). Inclure les clauses obligatoires : objet, prix, paiement, livraison, rétractation (si applicable), garanties, responsabilité, données personnelles, tribunal compétent. Attention : ce document est un point de départ, il doit être validé par un professionnel du droit.",
+    "tags": ["CGV", "conditions", "vente", "juridique"]
+  },
+  {
+    "id": "juridique-mentions-legales",
+    "title": "Mentions légales site web",
+    "category": "juridique",
+    "description": "Génère les mentions légales obligatoires pour un site web français.",
+    "prompt": "Rédige les mentions légales pour le site web {url_site}. Éditeur : {nom_entreprise}, {forme_juridique}, SIRET {siret}, siège social {adresse}. Directeur de la publication : {nom_directeur}. Hébergeur : {nom_hebergeur}, {adresse_hebergeur}. Contact : {email_contact}. Inclure les sections obligatoires selon la loi française (LCEN) : identification, hébergeur, propriété intellectuelle, données personnelles (résumé), cookies, crédits. Attention : à faire valider par un professionnel.",
+    "tags": ["mentions légales", "site web", "LCEN", "juridique"]
+  },
+  {
+    "id": "juridique-clause-rgpd",
+    "title": "Clause RGPD pour contrat",
+    "category": "juridique",
+    "description": "Rédige une clause de protection des données pour un contrat ou un formulaire.",
+    "prompt": "Rédige une clause RGPD pour {contexte} (contrat de prestation / formulaire web / CGV / contrat de travail). Responsable de traitement : {nom_entreprise}. Données collectées : {donnees_collectees}. Finalité : {finalite}. Durée de conservation : {duree_conservation}. Sous-traitants éventuels : {sous_traitants}. La clause doit mentionner les droits des personnes (accès, rectification, suppression, portabilité) et le contact DPO ou référent. Attention : à faire valider par un professionnel.",
+    "tags": ["RGPD", "données personnelles", "clause", "contrat", "juridique"]
+  },
+  {
+    "id": "juridique-contrat-prestation",
+    "title": "Contrat de prestation simple",
+    "category": "juridique",
+    "description": "Génère une trame de contrat de prestation de services entre professionnels.",
+    "prompt": "Rédige une trame de contrat de prestation de services entre {nom_prestataire} (SIRET {siret_prestataire}) et {nom_client} (SIRET {siret_client}). Objet de la prestation : {objet}. Durée : {duree}. Tarif : {tarif} EUR HT. Modalités de paiement : {modalites}. Obligations du prestataire : {obligations_prestataire}. Obligations du client : {obligations_client}. Inclure les clauses : confidentialité, propriété intellectuelle, résiliation, force majeure, loi applicable. Attention : cette trame est un point de départ, elle doit impérativement être vérifiée par un avocat ou juriste.",
+    "tags": ["contrat", "prestation", "services", "juridique"]
+  }
+]
